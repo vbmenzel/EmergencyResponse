@@ -1,3 +1,4 @@
+using EmergencyResponse.Core.Capabilities;
 using EmergencyResponse.Core.Exceptions;
 using EmergencyResponse.Core.Incidents;
 using EmergencyResponse.Core.Responders;
@@ -64,15 +65,26 @@ public class ResponderTests
         Assert.False(responder.IsEligibleFor(PlainIncident()));
     }
 
+    private static Incident RooftopIncident() =>
+        new("Goat stranded on the library roof", "Central Library",
+            SeverityLevel.High, typeof(ICanClimb));
+
     [Fact]
     public void ResponderMissingARequiredCapabilityIsNotEligible()
     {
-        // IDisposable stands in for a capability interface; the real ones
-        // arrive in Task 4 and this assertion moves to ICanClimb in Task 5.
-        Incident rooftop = new("Goat stranded on the library roof", "Central Library",
-            SeverityLevel.High, typeof(IDisposable));
+        Assert.False(new TestResponder("Ada", 80).IsEligibleFor(RooftopIncident()));
+    }
 
-        Assert.False(new TestResponder("Ada", 80).IsEligibleFor(rooftop));
+    [Fact]
+    public void ResponderWithTheRequiredCapabilityIsEligible()
+    {
+        Assert.True(new ClimbingTestResponder("Cyd", 80).IsEligibleFor(RooftopIncident()));
+    }
+
+    [Fact]
+    public void CapabilityAloneIsNotEnoughWithoutEnergy()
+    {
+        Assert.False(new ClimbingTestResponder("Cyd", 0).IsEligibleFor(RooftopIncident()));
     }
 
     [Fact]
