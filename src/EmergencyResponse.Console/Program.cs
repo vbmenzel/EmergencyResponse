@@ -1,4 +1,4 @@
-﻿namespace MunicipalAnimalEmergencyResponse.ConsoleHost;
+﻿namespace EmergencyResponse.ConsoleHost;
 
 sealed class Program
 {

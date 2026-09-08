@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\EmergencyResponse.Application\EmergencyResponse.Application.csproj" />
+    <ProjectReference Include="..\EmergencyResponse.Core\EmergencyResponse.Core.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Not EmergencyResponse.Console: a namespace of that name shadows
+         System.Console at every call site in this project. -->
+    <RootNamespace>EmergencyResponse.ConsoleHost</RootNamespace>
+  </PropertyGroup>
+
+</Project>

@@ -1,4 +1,4 @@
-namespace MunicipalAnimalEmergencyResponse.Core.Incidents;
+namespace EmergencyResponse.Core.Incidents;
 
 /// <summary>
 /// Priority of a reported animal incident.

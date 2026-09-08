@@ -1,4 +1,4 @@
-namespace MunicipalAnimalEmergencyResponse.Core.Exceptions;
+namespace EmergencyResponse.Core.Exceptions;
 
 /// <summary>
 /// Thrown when code attempts to assign a responder who cannot take the work:

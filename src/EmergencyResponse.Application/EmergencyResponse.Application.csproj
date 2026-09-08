@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\MunicipalAnimalEmergencyResponse.Core\MunicipalAnimalEmergencyResponse.Core.csproj" />
+    <ProjectReference Include="..\EmergencyResponse.Core\EmergencyResponse.Core.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

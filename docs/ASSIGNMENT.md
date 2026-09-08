@@ -1,8 +1,8 @@
-# Municipal Animal Emergency Response
+# Emergency Response
 
 ## Project brief
 
-The municipality needs a small command-centre application for its **Animal Emergency Response Unit**. Citizens report unusual animal-related incidents, and the command centre assigns an available responder with suitable skills.
+The municipality needs a small command-centre application for its **Emergency Response Unit**. Citizens report unusual animal-related incidents, and the command centre assigns an available responder with suitable skills.
 
 Most calls are not life-threatening, but they are certainly memorable: an escaped alpaca blocks the motorway, a swan has taken control of a bus stop, a goat is on the library roof, or a seagull has stolen an entire hot-dog stand.
 

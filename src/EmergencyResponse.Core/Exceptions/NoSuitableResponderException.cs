@@ -1,4 +1,4 @@
-namespace MunicipalAnimalEmergencyResponse.Core.Exceptions;
+namespace EmergencyResponse.Core.Exceptions;
 
 /// <summary>
 /// Thrown when no registered responder satisfies an incident's requirements,

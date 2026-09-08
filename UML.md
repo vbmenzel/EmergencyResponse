@@ -6,7 +6,7 @@
 classDiagram
     direction TB
 
-    namespace Core {
+    namespace EmergencyResponse.Core {
         class Responder {
             <<abstract>>
             +int MinEnergy$
@@ -136,7 +136,7 @@ classDiagram
         }
     }
 
-    namespace Application {
+    namespace EmergencyResponse.Application {
         class IIncidentResponseService {
             <<interface>>
             +string CurrentStrategyName
@@ -157,7 +157,7 @@ classDiagram
         }
     }
 
-    namespace Console {
+    namespace EmergencyResponse.ConsoleHost {
         class Program {
             <<static>>
             +Main(args: string[]) void$

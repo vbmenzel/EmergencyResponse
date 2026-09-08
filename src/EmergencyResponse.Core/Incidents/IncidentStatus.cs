@@ -1,4 +1,4 @@
-namespace MunicipalAnimalEmergencyResponse.Core.Incidents;
+namespace EmergencyResponse.Core.Incidents;
 
 /// <summary>
 /// Lifecycle state of a reported incident.
