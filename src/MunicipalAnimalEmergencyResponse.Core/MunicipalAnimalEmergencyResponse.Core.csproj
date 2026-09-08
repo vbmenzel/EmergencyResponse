@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- AssignTo, Release, AdjustEnergy, AssignResponder and Resolve are
+         internal so that only Core can drive the domain lifecycle. The tests
+         need to exercise exactly those members. -->
+    <InternalsVisibleTo Include="MunicipalAnimalEmergencyResponse.Tests" />
+  </ItemGroup>
+
+</Project>
