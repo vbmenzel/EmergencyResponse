@@ -103,6 +103,28 @@ public abstract class Responder
     }
 
     /// <summary>
+    /// Scales a responder's base effort by how demanding the incident is.
+    /// </summary>
+    /// <param name="severity">How urgent the incident is.</param>
+    /// <param name="baseCost">
+    /// What this kind of responder spends on the least demanding callout.
+    /// </param>
+    /// <returns>The energy this callout costs.</returns>
+    /// <remarks>
+    /// The scale is shared so that severity means the same thing across the
+    /// unit. Responder types differ only in their base cost, which is what
+    /// makes a drone pilot cheaper to send than an animal catcher.
+    /// </remarks>
+    protected static int CostFor(SeverityLevel severity, int baseCost) => severity switch
+    {
+        SeverityLevel.Low => baseCost,
+        SeverityLevel.Medium => baseCost * 2,
+        SeverityLevel.High => baseCost * 3,
+        SeverityLevel.Critical => baseCost * 4,
+        _ => baseCost
+    };
+
+    /// <summary>
     /// Marks the responder as busy on the given incident.
     /// </summary>
     /// <param name="incident">The incident being taken on.</param>
