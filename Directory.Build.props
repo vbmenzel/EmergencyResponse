@@ -1,12 +1,20 @@
 <Project>
   <!-- See https://aka.ms/dotnet/msbuild/customize for more details on customizing your build -->
   <PropertyGroup>
-    <!-- The assignment requires XML documentation on important public types and
-         members. CS1591 (missing XML comment on a publicly visible type or
-         member) is promoted to an error so an omission breaks the build rather
-         than being noticed at submission time. -->
+    <!-- Every compiler warning is an error. This solution contains no
+         third-party source, so there is nothing to be tolerant of. It also
+         covers CS1591 (missing XML comment on a publicly visible type or
+         member), which the assignment requires, and the CS86xx nullability
+         warnings that Nullable=enable produces. -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Run the IDExxxx code-style rules and the CAxxxx analyzers during
+         'dotnet build', not only inside the IDE. Without
+         EnforceCodeStyleInBuild the naming rules in .editorconfig are
+         editor-only suggestions and never fail a build. -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>Recommended</AnalysisMode>
   </PropertyGroup>
 </Project>

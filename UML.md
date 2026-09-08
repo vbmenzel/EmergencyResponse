@@ -52,7 +52,7 @@ classDiagram
         class CommandCentre {
             <<singleton>>
             -CommandCentre instance$
-            -object InstanceLock$
+            -object instanceLock$
             -object assignmentLock
             -List~Responder~ responders
             -List~Incident~ incidents
