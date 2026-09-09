@@ -147,6 +147,13 @@ classDiagram
             +RunUnsafeAsync(centre: CommandCentre) Task$
             +RunSafeAsync(centre: CommandCentre) Task$
         }
+        class ConsoleReport {
+            <<static>>
+            +Section(title: string) void$
+            +ResponderRow(responder: Responder, available: bool) void$
+            +IncidentRow(incident: Incident) void$
+            +IncidentDetail(incident: Incident, assigned: Responder) void$
+        }
         class DemoData {
             <<static>>
             +RegisterResponders(centre: CommandCentre) void$
@@ -170,9 +177,8 @@ classDiagram
     CommandCentre "1" o-- "0..*" Incident : reported incidents
     CommandCentre "1" o-- "0..*" ResolutionCallback : registered callbacks
     CommandCentre "1" --> "1" IAssignmentStrategy : current strategy
-    CommandCentre "1" --> "0..*" Responder : assignment record, one responder per incident
-    Incident "0..*" --> "1" SeverityLevel : severity
-    Incident "0..*" --> "1" IncidentStatus : status
+    Incident ..> SeverityLevel : typed by
+    Incident ..> IncidentStatus : typed by
     ResolutionCallback ..> Incident : receives resolved incident
     Incident ..> ICanOperateDrone : may require
     Incident ..> ICanCalmAnimals : may require
@@ -193,4 +199,9 @@ classDiagram
     Program ..> ThreadingDemonstration : runs the race and the fix
     ThreadingDemonstration ..> CommandCentre : concurrent callouts
     Program ..> SearchTool : responder and incident queries
+    Program ..> ConsoleReport : all formatting
+    ThreadingDemonstration ..> ConsoleReport : reports the outcome
+    ThreadingDemonstration ..> SearchTool : finds a free responder
+    DemoData ..> Responder : creates the roster
+    DemoData ..> Incident : creates the board
 ```
