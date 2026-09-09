@@ -138,26 +138,25 @@ classDiagram
 
     namespace EmergencyResponse.ConsoleDemo {
         class Program {
-            <<static>>
-            +Main(args: string[]) void$
+            -Main(args: string[]) Task$
             -LogResolution(incident: Incident) void$
         }
         class ThreadingDemonstration {
             <<static>>
-            +RunUnsafeAsync(centre: CommandCentre) Task$
-            +RunSafeAsync(centre: CommandCentre) Task$
+            ~RunUnsafeAsync(centre: CommandCentre) Task$
+            ~RunSafeAsync(centre: CommandCentre) Task$
         }
         class ConsoleReport {
             <<static>>
-            +Section(title: string) void$
-            +ResponderRow(responder: Responder, available: bool) void$
-            +IncidentRow(incident: Incident) void$
-            +IncidentDetail(incident: Incident, assigned: Responder) void$
+            ~Section(title: string) void$
+            ~ResponderRow(responder: Responder, available: bool) void$
+            ~IncidentRow(incident: Incident) void$
+            ~IncidentDetail(incident: Incident, assigned: Responder) void$
         }
         class DemoData {
             <<static>>
-            +RegisterResponders(centre: CommandCentre) void$
-            +ReportIncidents(centre: CommandCentre) IReadOnlyList~Incident~$
+            ~RegisterResponders(centre: CommandCentre) IReadOnlyList~Responder~$
+            ~ReportIncidents(centre: CommandCentre) IReadOnlyList~Incident~$
         }
     }
 
