@@ -6,7 +6,7 @@ namespace EmergencyResponse.Core.Incidents;
 /// <remarks>
 /// The members are ordered from least to most urgent so that searches can
 /// compare them directly, for example <c>incident.Severity &gt;=
-/// SeverityLevel.High</c>. Do not reorder them.
+/// SeverityLevel.High</c>.
 /// </remarks>
 public enum SeverityLevel
 {

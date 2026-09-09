@@ -5,8 +5,7 @@ namespace EmergencyResponse.Core.Incidents;
 /// </summary>
 /// <remarks>
 /// An incident moves forwards only: <see cref="Reported"/> to
-/// <see cref="Assigned"/> to <see cref="Resolved"/>. A resolved incident is
-/// never reopened or reassigned.
+/// <see cref="Assigned"/> to <see cref="Resolved"/>.
 /// </remarks>
 public enum IncidentStatus
 {

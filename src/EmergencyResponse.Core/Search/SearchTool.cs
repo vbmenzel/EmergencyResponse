@@ -19,9 +19,7 @@ public static class SearchTool
     /// <returns>
     /// The matching items, in source order, evaluated lazily as the result is
     /// enumerated. Never <see langword="null"/>: when nothing matches the
-    /// result is an empty sequence, so callers can enumerate it without a
-    /// guard. Use <see cref="FindFirstMatch"/> when the question is about a
-    /// single item and "not found" needs to be distinguishable.
+    /// result is an empty sequence.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     /// <paramref name="items"/> or <paramref name="condition"/> is null. This is
@@ -46,10 +44,7 @@ public static class SearchTool
     /// <param name="items">The sequence to search.</param>
     /// <param name="condition">The test each item must pass.</param>
     /// <returns>
-    /// The first matching item, or <see langword="null"/> if none does. This
-    /// method returns a single item, so <see langword="null"/> is the natural
-    /// "not found" signal; <see cref="FindMatches"/> returns a collection and
-    /// signals the same thing with an empty sequence.
+    /// The first matching item, or <see langword="null"/> if none does.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     /// <paramref name="items"/> or <paramref name="condition"/> is null.

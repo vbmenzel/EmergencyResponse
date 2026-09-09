@@ -8,12 +8,6 @@ namespace EmergencyResponse.Core.Incidents;
 /// One reported emergency, from the moment a citizen calls it in until it is
 /// closed with a resolution note.
 /// </summary>
-/// <remarks>
-/// An incident owns the consistency of its own lifecycle. At most one
-/// responder is ever assigned, and a resolved incident is never reopened. The
-/// methods that change state are <see langword="internal"/>, so only the
-/// coordination code inside this assembly can drive the transitions.
-/// </remarks>
 public sealed class Incident
 {
     /// <summary>
