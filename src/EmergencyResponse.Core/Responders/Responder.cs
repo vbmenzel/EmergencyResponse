@@ -61,9 +61,8 @@ public abstract class Responder
     /// </summary>
     /// <param name="incident">The incident to handle.</param>
     /// <returns>
-    /// A line describing what the responder did, for a host to present.
-    /// The domain returns text rather than printing it, so this assembly stays
-    /// free of any dependency on the console.
+    /// A line describing what the responder did. The domain returns text rather
+    /// than printing it, so this assembly never depends on a console.
     /// </returns>
     public abstract string HandleIncident(Incident incident);
 
@@ -93,9 +92,8 @@ public abstract class Responder
     /// </param>
     /// <returns>The energy this callout costs.</returns>
     /// <remarks>
-    /// The scale is shared so that severity means the same thing across the
-    /// unit. Responder types differ only in their base cost, which is what
-    /// makes a drone pilot cheaper to send than an animal catcher.
+    /// Shared so severity means the same thing across the unit; responder types
+    /// differ only in their base cost.
     /// </remarks>
     protected static int CostFor(SeverityLevel severity, int baseCost) => severity switch
     {
