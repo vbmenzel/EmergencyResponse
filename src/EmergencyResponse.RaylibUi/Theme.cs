@@ -16,6 +16,9 @@ internal static class Theme
     internal static Color Warn { get; } = Rgb(0xd2, 0x99, 0x22);
     internal static Color Bad { get; } = Rgb(0xf8, 0x51, 0x49);
 
+    /// <summary>Closed work: present, but no longer competing for attention.</summary>
+    internal static Color Done { get; } = Rgb(0x2e, 0x4a, 0x3a);
+
     /// <summary>Builds an opaque colour from byte components.</summary>
     /// <param name="r">Red.</param>
     /// <param name="g">Green.</param>

@@ -98,10 +98,11 @@ internal sealed class DispatchBoard
     /// <summary>The right column: the board, with what you can do to each incident.</summary>
     private void DrawIncidents()
     {
-        // Closed callouts sink to the bottom. OrderBy is stable, so within each
-        // group the board keeps the order things were called in.
+        // Most urgent first, closed callouts last. OrderBy is stable, so equal
+        // severities keep the order things were called in.
         List<Incident> board = [.. centre.Incidents
-            .OrderBy(i => i.Status == IncidentStatus.Resolved ? 1 : 0)];
+            .OrderBy(i => i.Status == IncidentStatus.Resolved ? 1 : 0)
+            .ThenByDescending(i => i.Severity)];
 
         Rectangle viewport = new(372, 88, 784, Height - 176);
 
@@ -158,11 +159,18 @@ internal sealed class DispatchBoard
     /// <param name="y">Top of the card.</param>
     private void DrawIncidentCard(Incident incident, int y)
     {
+        bool closed = incident.Status == IncidentStatus.Resolved;
+
         Rectangle card = new(372, y, 776, 74);
         Ui.Panel(card, Theme.Panel);
-        Raylib.DrawRectangleRec(new Rectangle(372, y, 4, 74), SeverityTint(incident.Severity));
 
-        Ui.Text(incident.Description, 388, y + 12, 16, Theme.Text);
+        // Closed work keeps its stripe, but in a colour that says "done" rather
+        // than repeating an urgency that no longer applies.
+        Raylib.DrawRectangleRec(
+            new Rectangle(372, y, 4, 74),
+            closed ? Theme.Done : SeverityTint(incident.Severity));
+
+        Ui.Text(incident.Description, 388, y + 12, 16, closed ? Theme.TextDim : Theme.Text);
 
         string where = $"{incident.Severity}  ·  {incident.Location}  ·  ";
         Ui.Text(where, 388, y + 34, 12, Theme.TextDim);
