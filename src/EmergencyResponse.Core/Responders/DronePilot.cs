@@ -36,7 +36,7 @@ public sealed class DronePilot : Responder, ICanOperateDrone, ICanClimb
 
         return incident.RequiredCapabilities.Contains(typeof(ICanClimb))
             ? $"{survey} {ClimbTo(incident.Location)}"
-            : $"{survey} {Name} talks the ground team in from the launch point.";
+            : $"{survey} The ground team is talked in from the launch point.";
     }
 
     /// <inheritdoc />

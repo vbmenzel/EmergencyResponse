@@ -34,10 +34,10 @@ public sealed class AnimalCatcher : Responder, ICanDriveRescueVehicle
         AdjustEnergy(-EnergyCostFor(incident.Severity, BaseCallOutCost));
 
         string handling = incident.Severity >= SeverityLevel.High
-            ? "casts the heavy net over it and lifts it clear"
-            : "works a light net and a handful of treats to walk it into the crate";
+            ? "the heavy net goes over it and it is lifted clear"
+            : "a light net and a handful of treats walk it into the crate";
 
-        return $"{DriveTo(incident.Location)} {Name} {handling}.";
+        return $"{DriveTo(incident.Location)} Once there, {handling}.";
     }
 
     /// <inheritdoc />

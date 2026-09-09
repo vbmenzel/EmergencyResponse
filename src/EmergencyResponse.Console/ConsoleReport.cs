@@ -42,6 +42,10 @@ internal static class ConsoleReport
     /// <param name="text">The line to write.</param>
     internal static void Line(string text) => Write(text, null);
 
+    /// <summary>Writes an indented line under the current heading.</summary>
+    /// <param name="text">The line to write.</param>
+    internal static void Item(string text) => Write($"  {text}", null);
+
     /// <summary>Writes indented supporting detail.</summary>
     /// <param name="text">The detail.</param>
     internal static void Detail(string text) => Write($"     {text}", ConsoleColor.DarkGray);

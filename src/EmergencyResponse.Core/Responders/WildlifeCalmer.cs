@@ -32,7 +32,7 @@ public sealed class WildlifeCalmer : Responder, ICanCalmAnimals
 
         AdjustEnergy(-EnergyCostFor(incident.Severity, BaseCallOutCost));
 
-        return $"{CalmAnimal(incident)} {Name} holds the space at {incident.Location} " +
+        return $"{CalmAnimal(incident)} The space at {incident.Location} is held " +
                "until the animal chooses to leave.";
     }
 
