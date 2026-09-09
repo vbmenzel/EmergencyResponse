@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/EmergencyResponse.ConsoleDemo/EmergencyResponse.ConsoleDemo.csproj" />
     <Project Path="src/EmergencyResponse.Core/EmergencyResponse.Core.csproj" />
+    <Project Path="src/EmergencyResponse.Tui/EmergencyResponse.Tui.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/EmergencyResponse.Tests/EmergencyResponse.Tests.csproj" />
