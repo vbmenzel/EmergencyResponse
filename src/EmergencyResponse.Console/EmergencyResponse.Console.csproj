@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\EmergencyResponse.Application\EmergencyResponse.Application.csproj" />
     <ProjectReference Include="..\EmergencyResponse.Core\EmergencyResponse.Core.csproj" />
   </ItemGroup>
 

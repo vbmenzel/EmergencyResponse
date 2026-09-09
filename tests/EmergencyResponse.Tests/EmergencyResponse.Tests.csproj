@@ -23,7 +23,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\EmergencyResponse.Core\EmergencyResponse.Core.csproj" />
-    <ProjectReference Include="..\..\src\EmergencyResponse.Application\EmergencyResponse.Application.csproj" />
   </ItemGroup>
 
 </Project>

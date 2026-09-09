@@ -1,6 +1,5 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/EmergencyResponse.Application/EmergencyResponse.Application.csproj" />
     <Project Path="src/EmergencyResponse.Console/EmergencyResponse.Console.csproj" />
     <Project Path="src/EmergencyResponse.Core/EmergencyResponse.Core.csproj" />
   </Folder>

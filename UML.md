@@ -135,28 +135,6 @@ classDiagram
         }
     }
 
-    namespace EmergencyResponse.Application {
-        class IIncidentResponseService {
-            <<interface>>
-            +string CurrentStrategyName
-            +RegisterResponder(responder: Responder) void
-            +ReportIncident(description: string, location: string, severity: SeverityLevel, requiredCapabilities: Type[]) Incident
-            +AssignIncident(incident: Incident) Responder
-            +AssignIncidentTo(incident: Incident, responder: Responder) Responder
-            +ResolveIncident(incident: Incident, note: string) void
-            +IsResponderAvailable(responder: Responder) bool
-            +GetAssignedResponder(incident: Incident) Responder
-            +AddResolutionCallback(callback: ResolutionCallback) void
-            +ChangeStrategy(strategy: IAssignmentStrategy) void
-            +FindResponders(condition: Func~Responder,bool~) IEnumerable~Responder~
-            +FindIncidents(condition: Func~Incident,bool~) IEnumerable~Incident~
-        }
-        class IncidentResponseService {
-            -CommandCentre commandCentre
-            +IncidentResponseService(commandCentre: CommandCentre)
-        }
-    }
-
     namespace EmergencyResponse.ConsoleHost {
         class Program {
             <<static>>
@@ -165,8 +143,8 @@ classDiagram
         }
         class DemoData {
             <<static>>
-            +RegisterResponders(service: IIncidentResponseService) void$
-            +ReportIncidents(service: IIncidentResponseService) IReadOnlyList~Incident~$
+            +RegisterResponders(centre: CommandCentre) void$
+            +ReportIncidents(centre: CommandCentre) IReadOnlyList~Incident~$
         }
     }
 
@@ -181,7 +159,6 @@ classDiagram
 
     IAssignmentStrategy <|.. FirstAvailableStrategy : implements
     IAssignmentStrategy <|.. HighestEnergyAvailableStrategy : implements
-    IIncidentResponseService <|.. IncidentResponseService : implements
 
     CommandCentre "1" o-- "0..*" Responder : registered responders
     CommandCentre "1" o-- "0..*" Incident : reported incidents
@@ -203,11 +180,9 @@ classDiagram
     SearchTool ..> Responder : filters
     SearchTool ..> Incident : filters
 
-    IncidentResponseService --> CommandCentre : delegates to the one centre
-    IncidentResponseService ..> SearchTool : responder and incident queries
 
-    Program ..> CommandCentre : creates the singleton with a strategy
-    Program ..> IIncidentResponseService : runs the scripted demonstration
+    Program ..> CommandCentre : creates it and runs the demonstration
     Program ..> IAssignmentStrategy : selects concrete policy
     Program ..> DemoData : seeds responders and incidents
+    Program ..> SearchTool : responder and incident queries
 ```
