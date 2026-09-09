@@ -124,11 +124,6 @@ public sealed class Incident
     /// Closes the incident with a note describing the outcome.
     /// </summary>
     /// <param name="note">What happened, for the record.</param>
-    /// <remarks>
-    /// Resolving does not free the assigned responder. That is the job of a
-    /// resolution callback registered with the command centre, which is what
-    /// makes the release observable in the console demonstration.
-    /// </remarks>
     /// <exception cref="ArgumentException"><paramref name="note"/> is blank.</exception>
     /// <exception cref="InvalidOperationException">
     /// The incident has no responder assigned, or is already resolved.

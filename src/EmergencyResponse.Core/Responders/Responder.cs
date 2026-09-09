@@ -13,10 +13,9 @@ public abstract class Responder
     /// <see cref="MaxEnergy"/> inclusive.
     /// </summary>
     /// <remarks>
-    /// A responder at <see cref="MinEnergy"/> is not eligible for new work.
-    /// Only <see cref="AdjustEnergy"/> changes this, and it clamps into range
-    /// rather than throwing, so handling a hard job can never push a responder
-    /// below zero.
+    /// A responder at <see cref="MinEnergy"/> takes no new work.
+    /// <see cref="AdjustEnergy"/> clamps rather than throwing, so a hard callout
+    /// exhausts a responder instead of crashing the dispatch.
     /// </remarks>
     public int Energy { get; private set; }
 

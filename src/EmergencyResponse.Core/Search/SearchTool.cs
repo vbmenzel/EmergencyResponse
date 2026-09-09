@@ -5,8 +5,7 @@ namespace EmergencyResponse.Core.Search;
 /// </summary>
 /// <remarks>
 /// Nothing here names a domain type, so the same method searches responders,
-/// incidents, or anything else. The command centre and the assignment
-/// strategies both use it rather than writing their own loops.
+/// incidents, or anything else.
 /// </remarks>
 public static class SearchTool
 {
