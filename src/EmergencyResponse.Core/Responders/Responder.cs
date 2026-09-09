@@ -6,15 +6,26 @@ namespace EmergencyResponse.Core.Responders;
 /// <summary>
 /// A field responder who can be sent to an incident.
 /// </summary>
-/// <remarks>
-/// A responder owns its own invariants. <see cref="Energy"/> and
-/// <see cref="IsAvailable"/> have private setters, and the methods that change
-/// them are <see langword="internal"/>, so unrelated code cannot mark somebody
-/// free while they are still out on a call. That double booking is the failure
-/// the paper-based system suffered from.
-/// </remarks>
 public abstract class Responder
 {
+    /// <summary>
+    /// How much energy the responder has left, from <see cref="MinEnergy"/> to
+    /// <see cref="MaxEnergy"/> inclusive.
+    /// </summary>
+    /// <remarks>
+    /// A responder at <see cref="MinEnergy"/> is not eligible for new work.
+    /// Only <see cref="AdjustEnergy"/> changes this, and it clamps into range
+    /// rather than throwing, so handling a hard job can never push a responder
+    /// below zero.
+    /// </remarks>
+    public int Energy { get; private set; }
+
+    /// <summary>
+    /// Whether the responder is free to take an incident. A newly created
+    /// responder is available.
+    /// </summary>
+    public bool IsAvailable { get; private set; }
+    
     /// <summary>The lowest valid energy level. A responder at this level takes no new work.</summary>
     public const int MinEnergy = 0;
 
@@ -47,24 +58,6 @@ public abstract class Responder
     public string Name { get; }
 
     /// <summary>
-    /// How much energy the responder has left, from <see cref="MinEnergy"/> to
-    /// <see cref="MaxEnergy"/> inclusive.
-    /// </summary>
-    /// <remarks>
-    /// A responder at <see cref="MinEnergy"/> is not eligible for new work.
-    /// Only <see cref="AdjustEnergy"/> changes this, and it clamps into range
-    /// rather than throwing, so handling a hard job can never push a responder
-    /// below zero.
-    /// </remarks>
-    public int Energy { get; private set; }
-
-    /// <summary>
-    /// Whether the responder is free to take an incident. A newly created
-    /// responder is available.
-    /// </summary>
-    public bool IsAvailable { get; private set; }
-
-    /// <summary>
     /// Deals with the incident in whatever way this kind of responder works.
     /// </summary>
     /// <param name="incident">The incident to handle.</param>
@@ -85,21 +78,11 @@ public abstract class Responder
     public bool IsEligibleFor(Incident incident)
     {
         ArgumentNullException.ThrowIfNull(incident);
-
-        if (!IsAvailable || Energy <= MinEnergy)
-        {
-            return false;
-        }
-
-        foreach (Type capability in incident.RequiredCapabilities)
-        {
-            if (!capability.IsInstanceOfType(this))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        
+        return IsAvailable &&
+               Energy > MinEnergy &&
+               incident.RequiredCapabilities.All(
+                   capability => capability.IsInstanceOfType(this));
     }
 
     /// <summary>
@@ -128,11 +111,6 @@ public abstract class Responder
     /// Marks the responder as busy on the given incident.
     /// </summary>
     /// <param name="incident">The incident being taken on.</param>
-    /// <remarks>
-    /// The eligibility check here is defence in depth. The command centre
-    /// already holds a lock across selection and reservation; this catches any
-    /// caller that does not.
-    /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="incident"/> is null.</exception>
     /// <exception cref="ResponderUnavailableException">
     /// The responder is busy, out of energy, or lacks a required capability.
