@@ -239,7 +239,7 @@ internal sealed class DispatchBoard
             Say($"Called in: {called.Description}", Theme.Warn);
         }
 
-        Ui.Text(message, 476, y + 10, 14, messageTint);
+        Ui.TextClipped(message, 24, y - 30, 14, messageTint, Width - 48);
     }
 
     /// <summary>Sends whoever the current policy picks, and reports either way.</summary>
@@ -252,7 +252,9 @@ internal sealed class DispatchBoard
                 ? centre.AssignIncident(incident)
                 : centre.AssignIncidentTo(incident, selected);
 
-            Say($"{chosen.Name} dispatched to {incident.Description}.", Theme.Good);
+            // Assigning records who is going; handling is the work, and the
+            // work is what costs energy. The domain writes the line, we draw it.
+            Say(chosen.HandleIncident(incident), Theme.Good);
         }
         catch (NoSuitableResponderException error)
         {

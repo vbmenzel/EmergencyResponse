@@ -91,6 +91,25 @@ internal static class Ui
         Raylib.DrawText(text, x, y, size, colour);
     }
 
+    /// <summary>Draws text, trimming it with an ellipsis if it will not fit.</summary>
+    /// <param name="text">What to write.</param>
+    /// <param name="x">Left edge.</param>
+    /// <param name="y">Top edge.</param>
+    /// <param name="size">Font size.</param>
+    /// <param name="colour">Text colour.</param>
+    /// <param name="maxWidth">The space available.</param>
+    internal static void TextClipped(string text, int x, int y, int size, Color colour, int maxWidth)
+    {
+        string shown = text;
+
+        while (shown.Length > 1 && Measure(shown + "...", size) > maxWidth)
+        {
+            shown = shown[..^1];
+        }
+
+        Text(shown.Length == text.Length ? text : shown + "...", x, y, size, colour);
+    }
+
     /// <summary>Draws a button and reports whether it was clicked this frame.</summary>
     /// <param name="bounds">Where to draw it.</param>
     /// <param name="label">The caption.</param>
