@@ -68,15 +68,30 @@ internal static class ConsoleReport
             available ? null : ConsoleColor.DarkGray);
     }
 
-    /// <summary>Writes one incident, coloured by how urgent it is.</summary>
+    /// <summary>
+    /// Writes one incident: severity, status, description. Status is in the
+    /// text as well as the colour, so the listing still reads when piped or
+    /// under NO_COLOR.
+    /// </summary>
     /// <param name="incident">The incident to show.</param>
     internal static void IncidentRow(Incident incident) =>
-        Write($"  [{incident.Severity,-8}] {incident.Description}", ColourFor(incident.Severity));
+        Write($"  [{incident.Severity,-8}] {incident.Status,-8}  {incident.Description}",
+            incident.Status == IncidentStatus.Resolved
+                ? ConsoleColor.DarkGray
+                : ColourFor(incident.Severity));
 
-    /// <summary>Writes an incident's supporting detail under its row.</summary>
+    /// <summary>
+    /// Writes an incident's supporting detail under its row.
+    /// </summary>
     /// <param name="incident">The incident to describe.</param>
-    internal static void IncidentDetail(Incident incident) =>
-        Detail($"{incident.Location}, needs {Capabilities(incident)}");
+    /// <param name="assigned">Who is or was on it, if anyone.</param>
+    internal static void IncidentDetail(Incident incident, Responder? assigned) =>
+        Detail(incident.Status switch
+        {
+            IncidentStatus.Reported => $"{incident.Location}, needs {Capabilities(incident)}",
+            IncidentStatus.Assigned => $"{incident.Location}, {assigned?.Name} is on it",
+            _ => $"{incident.Location}, closed by {assigned?.Name}: {incident.ResolutionNote}"
+        });
 
     /// <summary>Names an incident's required capabilities for display.</summary>
     /// <param name="incident">The incident.</param>

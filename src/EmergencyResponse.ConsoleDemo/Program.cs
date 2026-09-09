@@ -26,6 +26,8 @@ internal sealed class Program
         ShowSearches(centre);
         AssignAndResolve(centre, board);
         ShowHandledFailures(centre, board);
+        ShowStrategySwap(centre);
+        ShowFinalState(centre);
     }
 
     /// <summary>Section 1: who is on shift and what has been called in.</summary>
@@ -34,17 +36,32 @@ internal sealed class Program
     {
         ConsoleReport.Section("Registering responders and incidents");
 
+        ShowState(centre);
+    }
+
+    /// <summary>Section 6: the same listing again, to show what the shift changed.</summary>
+    /// <param name="centre">The command centre.</param>
+    private static void ShowFinalState(CommandCentre centre)
+    {
+        ConsoleReport.Section("The board at the end of the shift");
+        ShowState(centre);
+    }
+
+    /// <summary>Prints the roster and the incident board as they stand.</summary>
+    /// <param name="centre">The command centre.</param>
+    private static void ShowState(CommandCentre centre)
+    {
         ConsoleReport.Line($"Responders on the roster ({centre.Responders.Count}):");
         foreach (Responder responder in centre.Responders)
         {
             ConsoleReport.ResponderRow(responder, centre.IsResponderAvailable(responder));
         }
 
-        ConsoleReport.Line($"Incidents reported ({centre.Incidents.Count}):");
+        ConsoleReport.Line($"Incidents on the board ({centre.Incidents.Count}):");
         foreach (Incident incident in centre.Incidents)
         {
             ConsoleReport.IncidentRow(incident);
-            ConsoleReport.IncidentDetail(incident);
+            ConsoleReport.IncidentDetail(incident, centre.GetAssignedResponder(incident));
         }
     }
 
@@ -85,8 +102,6 @@ internal sealed class Program
             if (centre.GetAssignedResponder(incident) is Responder responder)
             {
                 ConsoleReport.Item($"{responder.Name} is free again.");
-                ConsoleReport.Detail(
-                    "Nobody released them: availability is derived from the open assignments.");
             }
         });
 
@@ -143,6 +158,49 @@ internal sealed class Program
         }
 
         ConsoleReport.Success("Both were handled. The program is still running.");
+    }
+
+    /// <summary>Section 5: the same centre, a different policy, a different pick.</summary>
+    /// <param name="centre">The command centre.</param>
+    private static void ShowStrategySwap(CommandCentre centre)
+    {
+        ConsoleReport.Section("Changing the assignment policy");
+
+        // Both policies have to choose from the same pool, or the comparison
+        // shows nothing but who happened to be busy.
+        foreach (Incident open in SearchTool.FindMatches(
+                     centre.Incidents, i => i.Status == IncidentStatus.Assigned))
+        {
+            centre.ResolveIncident(open, "Stood down so both policies see the same roster");
+        }
+
+        ConsoleReport.Line($"Everyone is free again ({centre.AvailableResponders.Count} responders).");
+
+        Pick(centre, "Fox raiding the school bins", "Riverside School");
+
+        centre.ChangeStrategy(new HighestEnergyAvailableStrategy());
+
+        Pick(centre, "Heron queueing at the fishmonger", "Market Hall");
+
+        ConsoleReport.Detail(
+            "CommandCentre was not edited between those two picks. Only the " +
+            "IAssignmentStrategy it was given changed.");
+    }
+
+    /// <summary>Reports one incident, assigns it, and shows who the policy chose.</summary>
+    /// <param name="centre">The command centre.</param>
+    /// <param name="description">What was reported.</param>
+    /// <param name="location">Where it is.</param>
+    private static void Pick(CommandCentre centre, string description, string location)
+    {
+        Incident incident = new(description, location, SeverityLevel.Medium);
+        centre.ReportIncident(incident);
+
+        ConsoleReport.Line($"Policy \"{centre.CurrentStrategyName}\" picks:");
+        Responder chosen = centre.AssignIncident(incident);
+        ConsoleReport.ResponderRow(chosen, available: false);
+
+        centre.ResolveIncident(incident, "Dealt with");
     }
 
     /// <summary>Named resolution callback, one of the two forms required.</summary>
