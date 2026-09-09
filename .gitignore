@@ -57,3 +57,9 @@ TestResult.xml
 nunit-*.xml
 
 .compileraware/*
+
+# JetBrains Rider / ReSharper personal settings.
+# The .user file holds machine-local state: absolute SDK and MSBuild paths,
+# window layout, saved unit-test sessions. Shared team settings would live in
+# EmergencyResponse.sln.DotSettings (no .user suffix), which is safe to commit.
+*.DotSettings.user
