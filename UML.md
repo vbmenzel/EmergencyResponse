@@ -135,7 +135,7 @@ classDiagram
         }
     }
 
-    namespace EmergencyResponse.ConsoleHost {
+    namespace EmergencyResponse.ConsoleDemo {
         class Program {
             <<static>>
             +Main(args: string[]) void$

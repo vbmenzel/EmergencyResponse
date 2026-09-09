@@ -2,7 +2,7 @@ using EmergencyResponse.Core.Coordination;
 using EmergencyResponse.Core.Incidents;
 using EmergencyResponse.Core.Responders;
 
-namespace EmergencyResponse.ConsoleHost;
+namespace EmergencyResponse.ConsoleDemo;
 
 /// <summary>
 /// The unit's roster and the day's call log, kept out of

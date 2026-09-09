@@ -1,7 +1,7 @@
 using EmergencyResponse.Core.Incidents;
 using EmergencyResponse.Core.Responders;
 
-namespace EmergencyResponse.ConsoleHost;
+namespace EmergencyResponse.ConsoleDemo;
 
 /// <summary>
 /// Formatting for the scripted demonstration, so <see cref="Program"/> reads as

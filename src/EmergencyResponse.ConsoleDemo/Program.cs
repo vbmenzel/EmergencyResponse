@@ -6,7 +6,7 @@ using EmergencyResponse.Core.Incidents;
 using EmergencyResponse.Core.Responders;
 using EmergencyResponse.Core.Search;
 
-namespace EmergencyResponse.ConsoleHost;
+namespace EmergencyResponse.ConsoleDemo;
 
 /// <summary>
 /// Composition root and presentation host. Picks the concrete assignment
