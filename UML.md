@@ -4,7 +4,7 @@
 
 ```mermaid
 classDiagram
-    direction TB
+    direction LR
 
     namespace EmergencyResponse.Core {
         class Responder {
@@ -13,12 +13,9 @@ classDiagram
             +int MaxEnergy$
             +string Name
             +int Energy «get; private set;»
-            +bool IsAvailable «get; private set;»
             #Responder(name: string, energy: int)
             +HandleIncident(incident: Incident) string*
-            +IsEligibleFor(incident: Incident) bool
-            ~AssignTo(incident: Incident) void
-            ~Release() void
+            +CanHandle(incident: Incident) bool
             ~AdjustEnergy(amount: int) void
         }
 
@@ -43,9 +40,9 @@ classDiagram
             +SeverityLevel Severity
             +IReadOnlyCollection~Type~ RequiredCapabilities
             +IncidentStatus Status «get; private set;»
-            +Responder AssignedResponder «get; private set;»
             +string ResolutionNote «get; private set;»
-            ~AssignResponder(responder: Responder) void
+            ~EnsureNotResolved() void
+            ~MarkAssigned() void
             ~Resolve(note: string) void
         }
 
@@ -56,6 +53,7 @@ classDiagram
             -object assignmentLock
             -List~Responder~ responders
             -List~Incident~ incidents
+            -Dictionary~Incident,Responder~ assignments
             -List~ResolutionCallback~ resolutionCallbacks
             -IAssignmentStrategy assignmentStrategy
             -CommandCentre(strategy: IAssignmentStrategy)
@@ -64,12 +62,14 @@ classDiagram
             +string CurrentStrategyName
             +IReadOnlyList~Responder~ Responders
             +IReadOnlyList~Incident~ Incidents
+            +IReadOnlyList~Responder~ AvailableResponders
             +RegisterResponder(responder: Responder) void
             +ReportIncident(incident: Incident) void
             +AssignIncident(incident: Incident) Responder
             +AssignSpecificResponder(incident: Incident, responder: Responder) Responder
             +ResolveIncident(incident: Incident, note: string) void
-            +ReleaseResponder(responder: Responder) void
+            +IsAvailable(responder: Responder) bool
+            +GetAssignedResponder(incident: Incident) Responder
             +AddResolutionCallback(callback: ResolutionCallback) void
             +ChangeStrategy(strategy: IAssignmentStrategy) void
             ~ResetForTests() void$
@@ -145,7 +145,8 @@ classDiagram
             +AssignIncident(incident: Incident) Responder
             +AssignSpecificResponder(incident: Incident, responder: Responder) Responder
             +ResolveIncident(incident: Incident, note: string) void
-            +ReleaseResponder(responder: Responder) void
+            +IsAvailable(responder: Responder) bool
+            +GetAssignedResponder(incident: Incident) Responder
             +AddResolutionCallback(callback: ResolutionCallback) void
             +ChangeStrategy(strategy: IAssignmentStrategy) void
             +FindResponders(condition: Func~Responder,bool~) IEnumerable~Responder~
@@ -187,7 +188,7 @@ classDiagram
     CommandCentre "1" o-- "0..*" Incident : reported incidents
     CommandCentre "1" o-- "0..*" ResolutionCallback : registered callbacks
     CommandCentre "1" --> "1" IAssignmentStrategy : current strategy
-    Incident "0..*" --> "0..1" Responder : single assigned responder, released on resolve
+    CommandCentre "1" --> "0..*" Responder : assignment record, one responder per incident
     Incident "0..*" --> "1" SeverityLevel : severity
     Incident "0..*" --> "1" IncidentStatus : status
     ResolutionCallback ..> Incident : receives resolved incident
@@ -195,7 +196,6 @@ classDiagram
     Incident ..> ICanCalmAnimals : may require
     Incident ..> ICanClimb : may require
     Incident ..> ICanDriveRescueVehicle : may require
-    Responder ..> ResponderUnavailableException : may throw
     CommandCentre ..> ResponderUnavailableException : may throw
     FirstAvailableStrategy ..> NoSuitableResponderException : may throw
     HighestEnergyAvailableStrategy ..> NoSuitableResponderException : may throw

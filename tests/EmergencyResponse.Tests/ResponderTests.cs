@@ -1,5 +1,4 @@
 using EmergencyResponse.Core.Capabilities;
-using EmergencyResponse.Core.Exceptions;
 using EmergencyResponse.Core.Incidents;
 using EmergencyResponse.Core.Responders;
 
@@ -9,6 +8,10 @@ public class ResponderTests
 {
     private static Incident PlainIncident() =>
         new("Territorial swan occupying a bus stop", "Market Street", SeverityLevel.Medium);
+
+    private static Incident RooftopIncident() =>
+        new("Goat stranded on the library roof", "Central Library",
+            SeverityLevel.High, typeof(ICanClimb));
 
     [Theory]
     [InlineData(-1)]
@@ -33,12 +36,6 @@ public class ResponderTests
     }
 
     [Fact]
-    public void NewResponderIsAvailable()
-    {
-        Assert.True(new TestResponder("Ada", 50).IsAvailable);
-    }
-
-    [Fact]
     public void AdjustEnergyClampsToTheValidRange()
     {
         TestResponder responder = new("Ada", 90);
@@ -51,77 +48,38 @@ public class ResponderTests
     }
 
     [Fact]
-    public void ExhaustedResponderIsNotEligible()
+    public void AnyResponderCanHandleAnIncidentThatDemandsNothingSpecial()
     {
-        Assert.False(new TestResponder("Ada", 0).IsEligibleFor(PlainIncident()));
+        Assert.True(new TestResponder("Ada", 50).CanHandle(PlainIncident()));
     }
 
     [Fact]
-    public void BusyResponderIsNotEligible()
+    public void AnExhaustedResponderCanHandleNothing()
     {
-        TestResponder responder = new("Ada", 80);
-        responder.AssignTo(PlainIncident());
-
-        Assert.False(responder.IsEligibleFor(PlainIncident()));
-    }
-
-    private static Incident RooftopIncident() =>
-        new("Goat stranded on the library roof", "Central Library",
-            SeverityLevel.High, typeof(ICanClimb));
-
-    [Fact]
-    public void ResponderMissingARequiredCapabilityIsNotEligible()
-    {
-        Assert.False(new TestResponder("Ada", 80).IsEligibleFor(RooftopIncident()));
+        Assert.False(new TestResponder("Ada", Responder.MinEnergy).CanHandle(PlainIncident()));
     }
 
     [Fact]
-    public void ResponderWithTheRequiredCapabilityIsEligible()
+    public void AResponderMissingARequiredCapabilityCannotHandleIt()
     {
-        Assert.True(new ClimbingTestResponder("Cyd", 80).IsEligibleFor(RooftopIncident()));
+        Assert.False(new TestResponder("Ada", 80).CanHandle(RooftopIncident()));
+    }
+
+    [Fact]
+    public void AResponderWithTheRequiredCapabilityCanHandleIt()
+    {
+        Assert.True(new ClimbingTestResponder("Cyd", 80).CanHandle(RooftopIncident()));
     }
 
     [Fact]
     public void CapabilityAloneIsNotEnoughWithoutEnergy()
     {
-        Assert.False(new ClimbingTestResponder("Cyd", 0).IsEligibleFor(RooftopIncident()));
+        Assert.False(new ClimbingTestResponder("Cyd", 0).CanHandle(RooftopIncident()));
     }
 
     [Fact]
-    public void AssigningABusyResponderThrows()
+    public void CanHandleRejectsANullIncident()
     {
-        TestResponder responder = new("Ada", 50);
-        responder.AssignTo(PlainIncident());
-
-        Assert.Throws<ResponderUnavailableException>(
-            () => responder.AssignTo(PlainIncident()));
-    }
-
-    [Fact]
-    public void AssigningAnExhaustedResponderThrows()
-    {
-        Assert.Throws<ResponderUnavailableException>(
-            () => new TestResponder("Ada", 0).AssignTo(PlainIncident()));
-    }
-
-    [Fact]
-    public void ReleaseMakesTheResponderAvailableAgain()
-    {
-        TestResponder responder = new("Ada", 50);
-        responder.AssignTo(PlainIncident());
-
-        responder.Release();
-
-        Assert.True(responder.IsAvailable);
-    }
-
-    [Fact]
-    public void ReleaseIsSafeToCallOnAnAvailableResponder()
-    {
-        TestResponder responder = new("Ada", 50);
-
-        responder.Release();
-
-        Assert.True(responder.IsAvailable);
+        Assert.Throws<ArgumentNullException>(() => new TestResponder("Ada", 50).CanHandle(null!));
     }
 }

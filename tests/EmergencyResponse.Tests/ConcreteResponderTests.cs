@@ -62,9 +62,9 @@ public class ConcreteResponderTests
         Incident needsBoth = new("Goat stranded on the library roof", "Central Library",
             SeverityLevel.High, typeof(ICanClimb), typeof(ICanOperateDrone));
 
-        Assert.True(new DronePilot("Cyd", 80).IsEligibleFor(needsBoth));
-        Assert.False(new AnimalCatcher("Bo", 80).IsEligibleFor(needsBoth));
-        Assert.False(new WildlifeCalmer("Dev", 80).IsEligibleFor(needsBoth));
+        Assert.True(new DronePilot("Cyd", 80).CanHandle(needsBoth));
+        Assert.False(new AnimalCatcher("Bo", 80).CanHandle(needsBoth));
+        Assert.False(new WildlifeCalmer("Dev", 80).CanHandle(needsBoth));
     }
 
     [Fact]

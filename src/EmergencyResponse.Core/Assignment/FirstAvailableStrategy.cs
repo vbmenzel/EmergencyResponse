@@ -21,7 +21,7 @@ public sealed class FirstAvailableStrategy : IAssignmentStrategy
 
         // FindFirstMatch stops at the first hit rather than filtering the whole
         // pool, which is the whole point of picking the first one.
-        return SearchTool.FindFirstMatch(responders, r => r.IsEligibleFor(incident))
+        return SearchTool.FindFirstMatch(responders, r => r.CanHandle(incident))
             ?? throw new NoSuitableResponderException(
                 $"No eligible responder for '{incident.Description}' under the {Name} policy.");
     }

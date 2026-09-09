@@ -22,7 +22,7 @@ public sealed class HighestEnergyAvailableStrategy : IAssignmentStrategy
 
         // MaxBy keeps the first of any tie, so an equal-energy pool still
         // resolves in registration order rather than arbitrarily.
-        return SearchTool.FindMatches(responders, r => r.IsEligibleFor(incident))
+        return SearchTool.FindMatches(responders, r => r.CanHandle(incident))
                 .MaxBy(r => r.Energy)
             ?? throw new NoSuitableResponderException(
                 $"No eligible responder for '{incident.Description}' under the {Name} policy.");

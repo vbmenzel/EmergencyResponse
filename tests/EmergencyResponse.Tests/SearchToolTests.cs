@@ -47,7 +47,7 @@ public class SearchToolTests
     {
         // Requirement 4 is that one generic method searches responders and
         // incidents alike. Nothing in SearchTool names either type.
-        Assert.Single(SearchTool.FindMatches(Responders(), r => !r.IsAvailable || r.Energy < 50));
+        Assert.Single(SearchTool.FindMatches(Responders(), r => r.Energy < 50));
         Assert.Single(SearchTool.FindMatches(Incidents(), i => i.RequiredCapabilities.Count > 0));
     }
 

@@ -1,4 +1,5 @@
 using EmergencyResponse.Core.Assignment;
+using EmergencyResponse.Core.Exceptions;
 using EmergencyResponse.Core.Incidents;
 using EmergencyResponse.Core.Responders;
 
@@ -16,6 +17,7 @@ public sealed class CommandCentre
     private readonly object assignmentLock = new();
     private readonly List<Responder> responders = [];
     private readonly List<Incident> incidents = [];
+    private readonly Dictionary<Incident, Responder> assignments = [];
     private readonly List<ResolutionCallback> resolutionCallbacks = [];
     private IAssignmentStrategy assignmentStrategy;
 
@@ -148,6 +150,183 @@ public sealed class CommandCentre
             }
 
             incidents.Add(incident);
+        }
+    }
+
+    /// <summary>
+    /// Whether the responder is free, that is not currently out on an
+    /// unresolved incident.
+    /// </summary>
+    /// <param name="responder">The responder to ask about.</param>
+    /// <returns><see langword="true"/> if nothing is currently assigned to them.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="responder"/> is null.</exception>
+    public bool IsAvailable(Responder responder)
+    {
+        ArgumentNullException.ThrowIfNull(responder);
+
+        lock (assignmentLock)
+        {
+            return IsFree(responder);
+        }
+    }
+
+    /// <summary>
+    /// The responders who are free right now, in registration order, as a
+    /// snapshot taken at the moment of the call.
+    /// </summary>
+    public IReadOnlyList<Responder> AvailableResponders
+    {
+        get
+        {
+            lock (assignmentLock)
+            {
+                return FreeResponders();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Who is handling the incident, or who handled it once it is resolved.
+    /// </summary>
+    /// <param name="incident">The incident to ask about.</param>
+    /// <returns>The responder, or <see langword="null"/> if it was never assigned.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="incident"/> is null.</exception>
+    public Responder? GetAssignedResponder(Incident incident)
+    {
+        ArgumentNullException.ThrowIfNull(incident);
+
+        lock (assignmentLock)
+        {
+            return assignments.GetValueOrDefault(incident);
+        }
+    }
+
+    /// <summary>
+    /// Picks a free, capable responder using the current policy and records the
+    /// assignment.
+    /// </summary>
+    /// <param name="incident">The incident that needs someone.</param>
+    /// <returns>The responder now handling it.</returns>
+    /// <remarks>
+    /// Selection and recording happen inside one lock.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="incident"/> is null.</exception>
+    /// <exception cref="NoSuitableResponderException">Nobody free is capable of it.</exception>
+    /// <exception cref="ResponderUnavailableException">The incident already has someone.</exception>
+    /// <exception cref="InvalidOperationException">The incident is already resolved.</exception>
+    public Responder AssignIncident(Incident incident)
+    {
+        ArgumentNullException.ThrowIfNull(incident);
+
+        lock (assignmentLock)
+        {
+            EnsureUnassigned(incident);
+            Responder chosen = assignmentStrategy.SelectResponder(FreeResponders(), incident);
+            Record(incident, chosen);
+            return chosen;
+        }
+    }
+
+    /// <summary>
+    /// Sends one named responder to an incident, bypassing the policy.
+    /// </summary>
+    /// <param name="incident">The incident that needs someone.</param>
+    /// <param name="responder">The responder to send.</param>
+    /// <returns>The responder now handling it.</returns>
+    /// <exception cref="ArgumentNullException">Either argument is null.</exception>
+    /// <exception cref="ResponderUnavailableException">
+    /// The responder is already out, exhausted, or lacks a required capability.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">The incident is already resolved.</exception>
+    public Responder AssignSpecificResponder(Incident incident, Responder responder)
+    {
+        ArgumentNullException.ThrowIfNull(incident);
+        ArgumentNullException.ThrowIfNull(responder);
+
+        lock (assignmentLock)
+        {
+            EnsureUnassigned(incident);
+            EnsureCanTake(incident, responder);
+            Record(incident, responder);
+            return responder;
+        }
+    }
+
+    /// <summary>Free means no unresolved incident is assigned to them.</summary>
+    private bool IsFree(Responder responder) =>
+        !assignments.Any(entry =>
+            entry.Value == responder && entry.Key.Status == IncidentStatus.Assigned);
+
+    /// <summary>The free responders, in registration order.</summary>
+    private List<Responder> FreeResponders() => [.. responders.Where(IsFree)];
+
+    /// <summary>Throws unless the incident is open and nobody is on it yet.</summary>
+    private void EnsureUnassigned(Incident incident)
+    {
+        incident.EnsureNotResolved();
+
+        if (assignments.TryGetValue(incident, out Responder? existing))
+        {
+            throw new ResponderUnavailableException(
+                $"Incident '{incident.Description}' is already assigned to {existing.Name}.");
+        }
+    }
+
+    /// <summary>Throws unless this specific responder could take the incident.</summary>
+    private void EnsureCanTake(Incident incident, Responder responder)
+    {
+        if (!IsFree(responder))
+        {
+            throw new ResponderUnavailableException(
+                $"{responder.Name} is already out on another incident.");
+        }
+
+        if (!responder.CanHandle(incident))
+        {
+            throw new ResponderUnavailableException(
+                $"{responder.Name} cannot take '{incident.Description}'. " +
+                $"Energy: {responder.Energy}, " +
+                $"required capabilities: {incident.RequiredCapabilities.Count}.");
+        }
+    }
+
+    /// <summary>
+    /// Writes the assignment. The record and the incident's status are both the
+    /// centre's to keep in step, and both happen under the same lock.
+    /// </summary>
+    private void Record(Incident incident, Responder responder)
+    {
+        assignments[incident] = responder;
+        incident.MarkAssigned();
+    }
+
+    /// <summary>
+    /// Closes an incident and notifies every registered callback.
+    /// </summary>
+    /// <param name="incident">The incident to close.</param>
+    /// <param name="note">What happened, for the record.</param>
+    /// <remarks>
+    /// The callbacks are copied under the lock and invoked outside it.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="incident"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="note"/> is blank.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// The incident has no responder assigned, or is already resolved.
+    /// </exception>
+    public void ResolveIncident(Incident incident, string note)
+    {
+        ArgumentNullException.ThrowIfNull(incident);
+
+        ResolutionCallback[] callbacks;
+        lock (assignmentLock)
+        {
+            incident.Resolve(note);
+            callbacks = [.. resolutionCallbacks];
+        }
+
+        foreach (ResolutionCallback callback in callbacks)
+        {
+            callback(incident);
         }
     }
 

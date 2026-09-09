@@ -53,17 +53,6 @@ public class AssignmentStrategyTests
 
     [Theory]
     [MemberData(nameof(BothStrategies))]
-    public void EveryStrategySkipsBusyResponders(IAssignmentStrategy strategy)
-    {
-        List<Responder> pool = Pool();
-        pool[1].AssignTo(PlainIncident());   // Dev, the highest energy
-        pool[0].AssignTo(PlainIncident());   // Bo, the first in order
-
-        Assert.Equal("Cyd", strategy.SelectResponder(pool, PlainIncident()).Name);
-    }
-
-    [Theory]
-    [MemberData(nameof(BothStrategies))]
     public void EveryStrategySkipsExhaustedResponders(IAssignmentStrategy strategy)
     {
         List<Responder> pool = [new AnimalCatcher("Bo", 0), new WildlifeCalmer("Dev", 30)];
@@ -125,12 +114,16 @@ public class AssignmentStrategyTests
     }
 
     [Fact]
-    public void SelectingDoesNotReserveTheResponder()
+    public void SelectingChangesNothing()
     {
-        // Selection is a pure query. Reserving is the command centre's job, and
-        // keeping them apart is what lets the centre do both under one lock.
-        Responder chosen = new FirstAvailableStrategy().SelectResponder(Pool(), PlainIncident());
+        // Selection is a pure query over a pool the centre has already filtered
+        // down to free responders. Recording the assignment is the centre's job.
+        List<Responder> pool = Pool();
+        int[] before = [.. pool.Select(r => r.Energy)];
 
-        Assert.True(chosen.IsAvailable);
+        new FirstAvailableStrategy().SelectResponder(pool, PlainIncident());
+
+        Assert.Equal(before, pool.Select(r => r.Energy));
+        Assert.Equal(3, pool.Count);
     }
 }

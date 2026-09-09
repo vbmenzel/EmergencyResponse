@@ -19,12 +19,6 @@ public abstract class Responder
     /// </remarks>
     public int Energy { get; private set; }
 
-    /// <summary>
-    /// Whether the responder is free to take an incident. A newly created
-    /// responder is available.
-    /// </summary>
-    public bool IsAvailable { get; private set; }
-    
     /// <summary>The lowest valid energy level. A responder at this level takes no new work.</summary>
     public const int MinEnergy = 0;
 
@@ -50,7 +44,6 @@ public abstract class Responder
 
         Name = name;
         Energy = energy;
-        IsAvailable = true;
     }
 
     /// <summary>The responder's name, fixed for the lifetime of the object.</summary>
@@ -67,18 +60,21 @@ public abstract class Responder
     public abstract string HandleIncident(Incident incident);
 
     /// <summary>
-    /// Whether this responder may be sent to the given incident: available,
-    /// with energy left, and implementing every capability the incident needs.
+    /// Whether this responder is capable of the incident: enough energy left,
+    /// and implementing every capability it requires.
     /// </summary>
     /// <param name="incident">The incident to check against.</param>
-    /// <returns><see langword="true"/> if the responder can take the incident.</returns>
+    /// <returns><see langword="true"/> if the responder is capable of it.</returns>
+    /// <remarks>
+    /// Capability only. Whether the responder is free is a question about the
+    /// roster, not about this object, so the command centre answers it.
+    /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="incident"/> is null.</exception>
-    public bool IsEligibleFor(Incident incident)
+    public bool CanHandle(Incident incident)
     {
         ArgumentNullException.ThrowIfNull(incident);
-        
-        return IsAvailable &&
-               Energy > MinEnergy &&
+
+        return Energy > MinEnergy &&
                incident.RequiredCapabilities.All(
                    capability => capability.IsInstanceOfType(this));
     }
@@ -103,35 +99,6 @@ public abstract class Responder
         SeverityLevel.Critical => baseCost * 4,
         _ => baseCost
     };
-
-    /// <summary>
-    /// Marks the responder as busy on the given incident.
-    /// </summary>
-    /// <param name="incident">The incident being taken on.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="incident"/> is null.</exception>
-    /// <exception cref="ResponderUnavailableException">
-    /// The responder is busy, out of energy, or lacks a required capability.
-    /// </exception>
-    internal void AssignTo(Incident incident)
-    {
-        ArgumentNullException.ThrowIfNull(incident);
-
-        if (!IsEligibleFor(incident))
-        {
-            throw new ResponderUnavailableException(
-                $"{Name} cannot take '{incident.Description}'. " +
-                $"Available: {IsAvailable}, energy: {Energy}, " +
-                $"required capabilities: {incident.RequiredCapabilities.Count}.");
-        }
-
-        IsAvailable = false;
-    }
-
-    /// <summary>
-    /// Frees the responder for new work. Safe to call on a responder who is
-    /// already available.
-    /// </summary>
-    internal void Release() => IsAvailable = true;
 
     /// <summary>
     /// Changes the responder's energy, clamped into the valid range.

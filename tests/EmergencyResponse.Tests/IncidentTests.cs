@@ -1,4 +1,3 @@
-using EmergencyResponse.Core.Exceptions;
 using EmergencyResponse.Core.Incidents;
 
 namespace EmergencyResponse.Tests;
@@ -14,7 +13,6 @@ public class IncidentTests
         Incident incident = NewIncident();
 
         Assert.Equal(IncidentStatus.Reported, incident.Status);
-        Assert.Null(incident.AssignedResponder);
         Assert.Null(incident.ResolutionNote);
         Assert.NotEqual(Guid.Empty, incident.Id);
         Assert.Empty(incident.RequiredCapabilities);
@@ -46,41 +44,44 @@ public class IncidentTests
     [Fact]
     public void ResolvingAnUnassignedIncidentThrows()
     {
-        Incident incident = NewIncident();
-
-        Assert.Throws<InvalidOperationException>(() => incident.Resolve("Goat lifted down"));
+        Assert.Throws<InvalidOperationException>(() => NewIncident().Resolve("Goat lifted down"));
     }
 
     [Fact]
     public void ResolvingWithABlankNoteThrows()
     {
         Incident incident = NewIncident();
-        incident.AssignResponder(new TestResponder("Ada", 50));
+        incident.MarkAssigned();
 
         Assert.Throws<ArgumentException>(() => incident.Resolve("   "));
     }
 
     [Fact]
-    public void AssigningASecondResponderThrows()
+    public void MarkAssignedTwiceThrows()
     {
         Incident incident = NewIncident();
-        incident.AssignResponder(new TestResponder("Ada", 50));
+        incident.MarkAssigned();
 
-        Assert.Throws<ResponderUnavailableException>(
-            () => incident.AssignResponder(new TestResponder("Bo", 50)));
+        Assert.Throws<InvalidOperationException>(incident.MarkAssigned);
     }
 
     [Fact]
-    public void AResolvedIncidentCannotBeAssignedAgain()
+    public void AResolvedIncidentRefusesFurtherAssignment()
     {
         Incident incident = NewIncident();
-        incident.AssignResponder(new TestResponder("Ada", 50));
+        incident.MarkAssigned();
         incident.Resolve("Goat lifted down with a ladder");
 
         Assert.Equal(IncidentStatus.Resolved, incident.Status);
         Assert.Equal("Goat lifted down with a ladder", incident.ResolutionNote);
-        Assert.Throws<InvalidOperationException>(
-            () => incident.AssignResponder(new TestResponder("Bo", 50)));
+        Assert.Throws<InvalidOperationException>(incident.EnsureNotResolved);
+        Assert.Throws<InvalidOperationException>(incident.MarkAssigned);
+    }
+
+    [Fact]
+    public void AnOpenIncidentPassesTheResolvedCheck()
+    {
+        NewIncident().EnsureNotResolved();
     }
 
     [Fact]

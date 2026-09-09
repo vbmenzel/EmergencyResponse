@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using EmergencyResponse.Core.Exceptions;
-using EmergencyResponse.Core.Responders;
 
 namespace EmergencyResponse.Core.Incidents;
 
@@ -80,43 +79,36 @@ public sealed class Incident
     public IncidentStatus Status { get; private set; } = IncidentStatus.Reported;
 
     /// <summary>
-    /// The single responder handling this incident, or <see langword="null"/>
-    /// while it is still unassigned.
-    /// </summary>
-    public Responder? AssignedResponder { get; private set; }
-
-    /// <summary>
     /// How the incident was closed, or <see langword="null"/> until it is
     /// resolved.
     /// </summary>
     public string? ResolutionNote { get; private set; }
 
-    /// <summary>
-    /// Records the responder who will handle this incident.
-    /// </summary>
-    /// <param name="responder">The responder taking the incident.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="responder"/> is null.</exception>
+    /// <summary>Throws if this incident is closed, without changing anything.</summary>
     /// <exception cref="InvalidOperationException">The incident is already resolved.</exception>
-    /// <exception cref="ResponderUnavailableException">
-    /// Another responder is already assigned to this incident.
-    /// </exception>
-    internal void AssignResponder(Responder responder)
+    internal void EnsureNotResolved()
     {
-        ArgumentNullException.ThrowIfNull(responder);
-
         if (Status == IncidentStatus.Resolved)
         {
             throw new InvalidOperationException(
                 $"Incident '{Description}' is resolved and cannot be assigned again.");
         }
+    }
 
-        if (AssignedResponder is not null)
+    /// <summary>Moves the incident from reported to assigned.</summary>
+    /// <remarks>
+    /// Who it is assigned to is recorded by the command centre, not here. The
+    /// incident tracks only its own lifecycle.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">The incident is not awaiting assignment.</exception>
+    internal void MarkAssigned()
+    {
+        if (Status != IncidentStatus.Reported)
         {
-            throw new ResponderUnavailableException(
-                $"Incident '{Description}' is already assigned to {AssignedResponder.Name}.");
+            throw new InvalidOperationException(
+                $"Incident '{Description}' cannot be assigned from status {Status}.");
         }
 
-        AssignedResponder = responder;
         Status = IncidentStatus.Assigned;
     }
 
@@ -126,7 +118,7 @@ public sealed class Incident
     /// <param name="note">What happened, for the record.</param>
     /// <exception cref="ArgumentException"><paramref name="note"/> is blank.</exception>
     /// <exception cref="InvalidOperationException">
-    /// The incident has no responder assigned, or is already resolved.
+    /// The incident is not currently assigned.
     /// </exception>
     internal void Resolve(string note)
     {
