@@ -137,6 +137,26 @@ on purpose, because you cannot `await` inside a `lock`.
 The one `Task.Delay` in the solution widens the race window so the failure is
 observable. It is in the demonstration and nowhere near `Core`.
 
+## A second UI
+
+![The raylib dispatch board](docs/images/raylib-board.png)
+
+`src/EmergencyResponse.RaylibUi` is a desktop window built with
+[raylib-cs](https://github.com/chrisdill/raylib-cs). It references `Core` and
+nothing else, and shares no code with the console. Click a responder to send
+them by name, or dispatch by policy. Swap the policy, call in new incidents,
+close them off.
+
+It is here as proof that `Core` is not entangled with the console: both hosts
+get a string back from `HandleIncident`, one writes it and the other draws it.
+The console demonstration is still the canonical showcase.
+
+```bash
+dotnet run --project src/EmergencyResponse.RaylibUi
+```
+
+Bundles Maple Mono NF under the SIL Open Font License 1.1.
+
 ## Warnings are errors
 
 `TreatWarningsAsErrors` is on, and `.editorconfig` promotes the naming rules to
