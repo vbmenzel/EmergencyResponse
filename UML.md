@@ -71,6 +71,7 @@ classDiagram
             +GetAssignedResponder(incident: Incident) Responder
             +AddResolutionCallback(callback: ResolutionCallback) void
             +ChangeStrategy(strategy: IAssignmentStrategy) void
+            +AssignIncidentUnsafeForDemo(incident: Incident, responder: Responder) Responder
             ~ResetForTests() void$
         }
 
@@ -141,6 +142,11 @@ classDiagram
             +Main(args: string[]) void$
             -LogResolution(incident: Incident) void$
         }
+        class ThreadingDemonstration {
+            <<static>>
+            +RunUnsafeAsync(centre: CommandCentre) Task$
+            +RunSafeAsync(centre: CommandCentre) Task$
+        }
         class DemoData {
             <<static>>
             +RegisterResponders(centre: CommandCentre) void$
@@ -184,5 +190,7 @@ classDiagram
     Program ..> CommandCentre : creates it and runs the demonstration
     Program ..> IAssignmentStrategy : selects concrete policy
     Program ..> DemoData : seeds responders and incidents
+    Program ..> ThreadingDemonstration : runs the race and the fix
+    ThreadingDemonstration ..> CommandCentre : concurrent callouts
     Program ..> SearchTool : responder and incident queries
 ```

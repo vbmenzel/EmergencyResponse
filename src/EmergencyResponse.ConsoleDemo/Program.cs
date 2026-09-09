@@ -16,7 +16,7 @@ internal sealed class Program
 {
     /// <summary>Runs the demonstration.</summary>
     /// <param name="args">Command line arguments. Unused.</param>
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         CommandCentre centre = CommandCentre.GetInstance(new FirstAvailableStrategy());
         DemoData.RegisterResponders(centre);
@@ -27,6 +27,7 @@ internal sealed class Program
         AssignAndResolve(centre, board);
         ShowHandledFailures(centre, board);
         ShowStrategySwap(centre);
+        await ShowConcurrency(centre).ConfigureAwait(false);
         ShowFinalState(centre);
     }
 
@@ -39,7 +40,7 @@ internal sealed class Program
         ShowState(centre);
     }
 
-    /// <summary>Section 6: the same listing again, to show what the shift changed.</summary>
+    /// <summary>Section 7: the same listing again, to show what the shift changed.</summary>
     /// <param name="centre">The command centre.</param>
     private static void ShowFinalState(CommandCentre centre)
     {
@@ -57,7 +58,13 @@ internal sealed class Program
             ConsoleReport.ResponderRow(responder, centre.IsResponderAvailable(responder));
         }
 
-        ConsoleReport.Line($"Incidents on the board ({centre.Incidents.Count}):");
+        List<Incident> open = [.. SearchTool.FindMatches(
+            centre.Incidents, i => i.Status != IncidentStatus.Resolved)];
+
+        ConsoleReport.Line(
+            $"Incidents on the board ({centre.Incidents.Count}): " +
+            $"{open.Count} still open, {centre.Incidents.Count - open.Count} closed.");
+
         foreach (Incident incident in centre.Incidents)
         {
             ConsoleReport.IncidentRow(incident);
@@ -158,6 +165,17 @@ internal sealed class Program
         }
 
         ConsoleReport.Success("Both were handled. The program is still running.");
+    }
+
+    /// <summary>Section 6: the race condition, then the same work with a lock.</summary>
+    /// <param name="centre">The command centre.</param>
+    /// <returns>A task that completes when both runs are finished.</returns>
+    private static async Task ShowConcurrency(CommandCentre centre)
+    {
+        ConsoleReport.Section("Concurrent callouts, without and with synchronisation");
+
+        await ThreadingDemonstration.RunUnsafeAsync(centre).ConfigureAwait(false);
+        await ThreadingDemonstration.RunSafeAsync(centre).ConfigureAwait(false);
     }
 
     /// <summary>Section 5: the same centre, a different policy, a different pick.</summary>

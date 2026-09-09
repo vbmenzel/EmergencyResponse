@@ -337,6 +337,39 @@ public sealed class CommandCentre
     }
 
     /// <summary>
+    /// Records an assignment with no eligibility check. Demonstration only.
+    /// </summary>
+    /// <param name="incident">The incident to record against.</param>
+    /// <param name="responder">The responder to record.</param>
+    /// <returns>The responder that was recorded.</returns>
+    /// <remarks>
+    /// <para>
+    /// This exists so the console can show what goes wrong without
+    /// synchronisation, and nothing else may call it. It still takes the lock,
+    /// because the dictionary itself must not be corrupted; what it does not do
+    /// is check whether the responder is still free. A caller that decided who
+    /// was free earlier, and records it here later, has split one operation into
+    /// two, and another thread can slip between them.
+    /// </para>
+    /// <para>
+    /// That is the whole bug. <see cref="AssignIncident"/> chooses and records
+    /// inside a single lock, so no such gap exists.
+    /// </para>
+    /// </remarks>
+    public Responder AssignIncidentUnsafeForDemo(Incident incident, Responder responder)
+    {
+        ArgumentNullException.ThrowIfNull(incident);
+        ArgumentNullException.ThrowIfNull(responder);
+
+        lock (assignmentLock)
+        {
+            assignments[incident] = responder;
+            incident.MarkAssigned();
+            return responder;
+        }
+    }
+
+    /// <summary>
     /// Closes an incident and notifies every registered callback.
     /// </summary>
     /// <param name="incident">The incident to close.</param>
