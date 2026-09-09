@@ -14,6 +14,9 @@ public sealed class CommandCentre
     private static readonly object instanceLock = new();
     private static CommandCentre? instance;
 
+    // Guards the roster, the incident list, the assignment record and the
+    // current strategy. Public members take this lock once at the top; the
+    // NoLock helpers below assume it is already held.
     private readonly object assignmentLock = new();
     private readonly List<Responder> responders = [];
     private readonly List<Incident> incidents = [];
@@ -160,13 +163,13 @@ public sealed class CommandCentre
     /// <param name="responder">The responder to ask about.</param>
     /// <returns><see langword="true"/> if nothing is currently assigned to them.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="responder"/> is null.</exception>
-    public bool IsAvailable(Responder responder)
+    public bool IsResponderAvailable(Responder responder)
     {
         ArgumentNullException.ThrowIfNull(responder);
 
         lock (assignmentLock)
         {
-            return IsFree(responder);
+            return IsResponderAvailableNoLock(responder);
         }
     }
 
@@ -180,7 +183,7 @@ public sealed class CommandCentre
         {
             lock (assignmentLock)
             {
-                return FreeResponders();
+                return AvailableRespondersNoLock();
             }
         }
     }
@@ -212,16 +215,17 @@ public sealed class CommandCentre
     /// </remarks>
     /// <exception cref="ArgumentNullException"><paramref name="incident"/> is null.</exception>
     /// <exception cref="NoSuitableResponderException">Nobody free is capable of it.</exception>
-    /// <exception cref="ResponderUnavailableException">The incident already has someone.</exception>
-    /// <exception cref="InvalidOperationException">The incident is already resolved.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// The incident is already resolved, or already has somebody on it.
+    /// </exception>
     public Responder AssignIncident(Incident incident)
     {
         ArgumentNullException.ThrowIfNull(incident);
 
         lock (assignmentLock)
         {
-            EnsureUnassigned(incident);
-            Responder chosen = assignmentStrategy.SelectResponder(FreeResponders(), incident);
+            EnsureIncidentIsOpen(incident);
+            Responder chosen = assignmentStrategy.SelectResponder(AvailableRespondersNoLock(), incident);
             Record(incident, chosen);
             return chosen;
         }
@@ -237,45 +241,77 @@ public sealed class CommandCentre
     /// <exception cref="ResponderUnavailableException">
     /// The responder is already out, exhausted, or lacks a required capability.
     /// </exception>
-    /// <exception cref="InvalidOperationException">The incident is already resolved.</exception>
-    public Responder AssignSpecificResponder(Incident incident, Responder responder)
+    /// <exception cref="InvalidOperationException">
+    /// The incident is already resolved, or already has somebody on it.
+    /// </exception>
+    public Responder AssignIncidentTo(Incident incident, Responder responder)
     {
         ArgumentNullException.ThrowIfNull(incident);
         ArgumentNullException.ThrowIfNull(responder);
 
         lock (assignmentLock)
         {
-            EnsureUnassigned(incident);
-            EnsureCanTake(incident, responder);
+            EnsureIncidentIsOpen(incident);
+            EnsureResponderCanTake(incident, responder);
             Record(incident, responder);
             return responder;
         }
     }
 
-    /// <summary>Free means no unresolved incident is assigned to them.</summary>
-    private bool IsFree(Responder responder) =>
+    /// <summary>
+    /// Whether a responder is available, meaning no unresolved incident is
+    /// assigned to them.
+    /// </summary>
+    /// <param name="responder">The responder to check.</param>
+    /// <returns><see langword="true"/> if nothing is currently assigned to them.</returns>
+    private bool IsResponderAvailableNoLock(Responder responder) =>
         !assignments.Any(entry =>
             entry.Value == responder && entry.Key.Status == IncidentStatus.Assigned);
 
-    /// <summary>The free responders, in registration order.</summary>
-    private List<Responder> FreeResponders() => [.. responders.Where(IsFree)];
+    /// <summary>
+    /// The available responders, in registration order. Same locking obligation
+    /// as <see cref="IsResponderAvailableNoLock"/>.
+    /// </summary>
+    /// <remarks>
+    /// This is the pool handed to <see cref="IAssignmentStrategy"/>. The centre
+    /// decides who is free; the strategy decides which of them to send.
+    /// </remarks>
+    /// <returns>The responders with nothing currently assigned to them.</returns>
+    private List<Responder> AvailableRespondersNoLock() =>
+        [.. responders.Where(IsResponderAvailableNoLock)];
 
-    /// <summary>Throws unless the incident is open and nobody is on it yet.</summary>
-    private void EnsureUnassigned(Incident incident)
+    /// <summary>
+    /// Throws unless the incident is still open for assignment. About the
+    /// incident only; whether anybody can go is a separate question.
+    /// </summary>
+    private void EnsureIncidentIsOpen(Incident incident)
     {
-        incident.EnsureNotResolved();
-
-        if (assignments.TryGetValue(incident, out Responder? existing))
+        switch (incident.Status)
         {
-            throw new ResponderUnavailableException(
-                $"Incident '{incident.Description}' is already assigned to {existing.Name}.");
+            case IncidentStatus.Reported:
+                return;
+
+            case IncidentStatus.Assigned:
+                throw new InvalidOperationException(
+                    $"Incident '{incident.Description}' is already assigned to " +
+                    $"{assignments[incident].Name}.");
+
+            default:
+                throw new InvalidOperationException(
+                    $"Incident '{incident.Description}' cannot be assigned from " +
+                    $"status {incident.Status}.");
         }
     }
 
-    /// <summary>Throws unless this specific responder could take the incident.</summary>
-    private void EnsureCanTake(Incident incident, Responder responder)
+    /// <summary>
+    /// Throws unless this named responder could take the incident, saying which
+    /// of the two reasons stopped them. Only the bypass path needs this: on the
+    /// normal path the centre supplies free responders and the strategy picks a
+    /// capable one.
+    /// </summary>
+    private void EnsureResponderCanTake(Incident incident, Responder responder)
     {
-        if (!IsFree(responder))
+        if (!IsResponderAvailableNoLock(responder))
         {
             throw new ResponderUnavailableException(
                 $"{responder.Name} is already out on another incident.");

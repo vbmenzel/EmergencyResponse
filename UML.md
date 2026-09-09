@@ -41,7 +41,6 @@ classDiagram
             +IReadOnlyCollection~Type~ RequiredCapabilities
             +IncidentStatus Status «get; private set;»
             +string ResolutionNote «get; private set;»
-            ~EnsureNotResolved() void
             ~MarkAssigned() void
             ~Resolve(note: string) void
         }
@@ -66,9 +65,9 @@ classDiagram
             +RegisterResponder(responder: Responder) void
             +ReportIncident(incident: Incident) void
             +AssignIncident(incident: Incident) Responder
-            +AssignSpecificResponder(incident: Incident, responder: Responder) Responder
+            +AssignIncidentTo(incident: Incident, responder: Responder) Responder
             +ResolveIncident(incident: Incident, note: string) void
-            +IsAvailable(responder: Responder) bool
+            +IsResponderAvailable(responder: Responder) bool
             +GetAssignedResponder(incident: Incident) Responder
             +AddResolutionCallback(callback: ResolutionCallback) void
             +ChangeStrategy(strategy: IAssignmentStrategy) void
@@ -143,9 +142,9 @@ classDiagram
             +RegisterResponder(responder: Responder) void
             +ReportIncident(description: string, location: string, severity: SeverityLevel, requiredCapabilities: Type[]) Incident
             +AssignIncident(incident: Incident) Responder
-            +AssignSpecificResponder(incident: Incident, responder: Responder) Responder
+            +AssignIncidentTo(incident: Incident, responder: Responder) Responder
             +ResolveIncident(incident: Incident, note: string) void
-            +IsAvailable(responder: Responder) bool
+            +IsResponderAvailable(responder: Responder) bool
             +GetAssignedResponder(incident: Incident) Responder
             +AddResolutionCallback(callback: ResolutionCallback) void
             +ChangeStrategy(strategy: IAssignmentStrategy) void

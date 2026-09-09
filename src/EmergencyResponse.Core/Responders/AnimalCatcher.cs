@@ -31,7 +31,7 @@ public sealed class AnimalCatcher : Responder, ICanDriveRescueVehicle
     {
         ArgumentNullException.ThrowIfNull(incident);
 
-        AdjustEnergy(-CostFor(incident.Severity, BaseCallOutCost));
+        AdjustEnergy(-EnergyCostFor(incident.Severity, BaseCallOutCost));
 
         string handling = incident.Severity >= SeverityLevel.High
             ? "casts the heavy net over it and lifts it clear"

@@ -30,7 +30,7 @@ public sealed class DronePilot : Responder, ICanOperateDrone, ICanClimb
     {
         ArgumentNullException.ThrowIfNull(incident);
 
-        AdjustEnergy(-CostFor(incident.Severity, BaseCallOutCost));
+        AdjustEnergy(-EnergyCostFor(incident.Severity, BaseCallOutCost));
 
         string survey = OperateDrone(incident);
 

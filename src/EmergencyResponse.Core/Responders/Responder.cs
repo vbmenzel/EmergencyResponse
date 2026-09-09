@@ -91,7 +91,7 @@ public abstract class Responder
     /// Shared so severity means the same thing across the unit; responder types
     /// differ only in their base cost.
     /// </remarks>
-    protected static int CostFor(SeverityLevel severity, int baseCost) => severity switch
+    protected static int EnergyCostFor(SeverityLevel severity, int baseCost) => severity switch
     {
         SeverityLevel.Low => baseCost,
         SeverityLevel.Medium => baseCost * 2,

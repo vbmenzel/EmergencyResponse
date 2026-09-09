@@ -43,7 +43,7 @@ public class CommandCentreAssignmentTests : IDisposable
         Assert.Same(bo, chosen);
         Assert.Same(bo, centre.GetAssignedResponder(alpacas));
         Assert.Equal(IncidentStatus.Assigned, alpacas.Status);
-        Assert.False(centre.IsAvailable(bo));
+        Assert.False(centre.IsResponderAvailable(bo));
         Assert.Empty(centre.AvailableResponders);
     }
 
@@ -80,7 +80,7 @@ public class CommandCentreAssignmentTests : IDisposable
     }
 
     [Fact]
-    public void AssignSpecificResponderReportsWhyANamedResponderCannotGo()
+    public void AssignIncidentToReportsWhyANamedResponderCannotGo()
     {
         AnimalCatcher bo = new("Bo", 80);
         centre.RegisterResponder(bo);
@@ -89,23 +89,23 @@ public class CommandCentreAssignmentTests : IDisposable
         // AssignIncident could not surface this: its strategy filters an
         // unavailable responder out and raises the other exception instead.
         ResponderUnavailableException error = Assert.Throws<ResponderUnavailableException>(
-            () => centre.AssignSpecificResponder(Report("Second", SeverityLevel.Low), bo));
+            () => centre.AssignIncidentTo(Report("Second", SeverityLevel.Low), bo));
 
         Assert.Contains("Bo", error.Message, StringComparison.Ordinal);
     }
 
     [Fact]
-    public void AssignSpecificResponderRejectsSomebodyLackingTheCapability()
+    public void AssignIncidentToRejectsSomebodyLackingTheCapability()
     {
         AnimalCatcher bo = new("Bo", 80);
         centre.RegisterResponder(bo);
 
-        Assert.Throws<ResponderUnavailableException>(() => centre.AssignSpecificResponder(
+        Assert.Throws<ResponderUnavailableException>(() => centre.AssignIncidentTo(
             Report("Goat stranded on the library roof", SeverityLevel.High, typeof(ICanClimb)), bo));
     }
 
     [Fact]
-    public void AssignSpecificResponderOverridesThePolicysChoice()
+    public void AssignIncidentToOverridesThePolicysChoice()
     {
         WildlifeCalmer dev = new("Dev", 95);
         centre.RegisterResponder(new AnimalCatcher("Bo", 40));
@@ -113,7 +113,7 @@ public class CommandCentreAssignmentTests : IDisposable
         Incident swan = Report("Territorial swan occupying a bus stop", SeverityLevel.Medium);
 
         // First-available would have picked Bo.
-        Assert.Same(dev, centre.AssignSpecificResponder(swan, dev));
+        Assert.Same(dev, centre.AssignIncidentTo(swan, dev));
         Assert.Same(dev, centre.GetAssignedResponder(swan));
     }
 
@@ -145,13 +145,13 @@ public class CommandCentreAssignmentTests : IDisposable
         centre.RegisterResponder(bo);
         Incident swan = Report("Territorial swan occupying a bus stop", SeverityLevel.Medium);
         centre.AssignIncident(swan);
-        Assert.False(centre.IsAvailable(bo));
+        Assert.False(centre.IsResponderAvailable(bo));
 
         centre.ResolveIncident(swan, "Swan escorted to the pond");
 
         // Availability is derived from open assignments, so closing the
         // incident is what frees the responder. There is nothing to forget.
-        Assert.True(centre.IsAvailable(bo));
+        Assert.True(centre.IsResponderAvailable(bo));
         Assert.Same(bo, centre.AvailableResponders.Single());
     }
 
@@ -210,10 +210,10 @@ public class CommandCentreAssignmentTests : IDisposable
     {
         Assert.Throws<ArgumentNullException>(() => centre.AssignIncident(null!));
         Assert.Throws<ArgumentNullException>(() => centre.ResolveIncident(null!, "done"));
-        Assert.Throws<ArgumentNullException>(() => centre.IsAvailable(null!));
+        Assert.Throws<ArgumentNullException>(() => centre.IsResponderAvailable(null!));
         Assert.Throws<ArgumentNullException>(() => centre.GetAssignedResponder(null!));
         Assert.Throws<ArgumentNullException>(
-            () => centre.AssignSpecificResponder(null!, new AnimalCatcher("Bo", 80)));
+            () => centre.AssignIncidentTo(null!, new AnimalCatcher("Bo", 80)));
     }
 
     [Fact]
@@ -226,9 +226,11 @@ public class CommandCentreAssignmentTests : IDisposable
         Incident swan = Report("Territorial swan occupying a bus stop", SeverityLevel.Medium);
         centre.AssignIncident(swan);
 
-        Assert.Throws<ResponderUnavailableException>(() => centre.AssignIncident(swan));
+        // An incident that already has somebody is an incident lifecycle error,
+        // the same kind as "already resolved". It says nothing about Dev.
+        Assert.Throws<InvalidOperationException>(() => centre.AssignIncident(swan));
 
-        Assert.True(centre.IsAvailable(dev));
+        Assert.True(centre.IsResponderAvailable(dev));
         Assert.Same(bo, centre.GetAssignedResponder(swan));
     }
 
@@ -243,7 +245,7 @@ public class CommandCentreAssignmentTests : IDisposable
 
         Assert.Throws<InvalidOperationException>(() => centre.AssignIncident(swan));
 
-        Assert.True(centre.IsAvailable(bo));
+        Assert.True(centre.IsResponderAvailable(bo));
     }
 
     [Fact]

@@ -84,17 +84,6 @@ public sealed class Incident
     /// </summary>
     public string? ResolutionNote { get; private set; }
 
-    /// <summary>Throws if this incident is closed, without changing anything.</summary>
-    /// <exception cref="InvalidOperationException">The incident is already resolved.</exception>
-    internal void EnsureNotResolved()
-    {
-        if (Status == IncidentStatus.Resolved)
-        {
-            throw new InvalidOperationException(
-                $"Incident '{Description}' is resolved and cannot be assigned again.");
-        }
-    }
-
     /// <summary>Moves the incident from reported to assigned.</summary>
     /// <remarks>
     /// Who it is assigned to is recorded by the command centre, not here. The

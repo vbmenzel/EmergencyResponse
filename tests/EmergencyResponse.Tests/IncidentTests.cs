@@ -74,14 +74,7 @@ public class IncidentTests
 
         Assert.Equal(IncidentStatus.Resolved, incident.Status);
         Assert.Equal("Goat lifted down with a ladder", incident.ResolutionNote);
-        Assert.Throws<InvalidOperationException>(incident.EnsureNotResolved);
         Assert.Throws<InvalidOperationException>(incident.MarkAssigned);
-    }
-
-    [Fact]
-    public void AnOpenIncidentPassesTheResolvedCheck()
-    {
-        NewIncident().EnsureNotResolved();
     }
 
     [Fact]
