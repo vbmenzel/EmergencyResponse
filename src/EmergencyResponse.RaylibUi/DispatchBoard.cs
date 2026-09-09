@@ -28,6 +28,7 @@ internal sealed class DispatchBoard
     private int calloutCount;
     private Responder? selected;
     private float scroll;
+    private bool followNewest;
 
     /// <summary>Creates the board over a command centre.</summary>
     /// <param name="centre">The centre to drive.</param>
@@ -97,11 +98,22 @@ internal sealed class DispatchBoard
     /// <summary>The right column: the board, with what you can do to each incident.</summary>
     private void DrawIncidents()
     {
-        IReadOnlyList<Incident> board = centre.Incidents;
+        // Closed callouts sink to the bottom. OrderBy is stable, so within each
+        // group the board keeps the order things were called in.
+        List<Incident> board = [.. centre.Incidents
+            .OrderBy(i => i.Status == IncidentStatus.Resolved ? 1 : 0)];
+
         Rectangle viewport = new(372, 88, 784, Height - 176);
 
         int open = board.Count(i => i.Status != IncidentStatus.Resolved);
         Ui.Text($"INCIDENTS  ({open} open of {board.Count})", 372, 70, 14, Theme.Accent);
+
+        if (followNewest)
+        {
+            // Show the newest open one, which is the last before the closed block.
+            scroll = Math.Min(0, viewport.Height - (open * 84) - 16);
+            followNewest = false;
+        }
 
         // The list outgrows the window as soon as you call in a few, so it
         // scrolls rather than silently hiding the newest ones.
@@ -223,7 +235,7 @@ internal sealed class DispatchBoard
         {
             Incident called = SeedData.NextCallout(calloutCount++);
             centre.ReportIncident(called);
-            scroll = float.MinValue;   // clamped next frame: jump to the newest
+            followNewest = true;
             Say($"Called in: {called.Description}", Theme.Warn);
         }
 
