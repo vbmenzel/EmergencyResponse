@@ -141,12 +141,3 @@ observable. It is in the demonstration and nowhere near `Core`.
 `TreatWarningsAsErrors` is on, and `.editorconfig` promotes the naming rules to
 errors via `IDE1006`. So a missing XML doc comment, a nullability warning or a
 stray `_underscored` field breaks the build rather than accumulating quietly.
-
-## Tests
-
-92 of them, covering the domain invariants rather than the console output. The
-ones worth knowing about:
-
-- `ConcurrentAssignmentsNeverDoubleBookAResponder` fires 16 simultaneous
-  assignments at a pool of two and asserts that nobody appears twice.
-- `CallbacksRunOutsideTheLockSoOtherThreadsAreNotBlocked` starts a second thread from inside a callback and fails on a timeout if the lock is still held.
