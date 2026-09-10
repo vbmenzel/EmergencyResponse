@@ -14,28 +14,50 @@ namespace EmergencyResponse.ConsoleDemo;
 /// </summary>
 internal sealed class Program
 {
-    /// <summary>Runs the demonstration.</summary>
-    /// <param name="args">Command line arguments. Unused.</param>
+    /// <summary>Runs the demonstration, or the one section named in the arguments.</summary>
+    /// <param name="args">Empty to run everything, or the name of one section.</param>
+    /// <returns>A task that completes when the demonstration has finished.</returns>
     private static async Task Main(string[] args)
     {
         CommandCentre centre = CommandCentre.GetInstance(new FirstAvailableStrategy());
         DemoData.RegisterResponders(centre);
         IReadOnlyList<Incident> board = DemoData.ReportIncidents(centre);
 
-        ShowRoster(centre);
-        ShowSearches(centre);
-        AssignAndResolve(centre, board);
-        ShowHandledFailures(centre, board);
-        ShowStrategySwap(centre);
-        await ShowConcurrency(centre).ConfigureAwait(false);
-        ShowFinalState(centre);
+        if (args.Length == 0)
+        {
+            ShowRoster(centre);
+            ShowSearches(centre);
+            AssignAndResolve(centre, board);
+            ShowHandledFailures(centre, board);
+            ShowStrategySwap(centre);
+            await ShowConcurrency(centre).ConfigureAwait(false);
+            ShowFinalState(centre);
+            return;
+        }
+
+        switch (args[0])
+        {
+            case "roster": ShowRoster(centre); break;
+            case "search": ShowSearches(centre); break;
+            case "callbacks": AssignAndResolve(centre, board); break;
+            case "exceptions": ShowHandledFailures(centre, board); break;
+            case "policy": ShowStrategySwap(centre); break;
+            case "concurrency": await ShowConcurrency(centre).ConfigureAwait(false); break;
+            case "board": ShowFinalState(centre); break;
+            default:
+                ConsoleReport.Problem($"No section called \"{args[0]}\".");
+                ConsoleReport.Detail(
+                    "Try roster, search, callbacks, exceptions, policy, concurrency or board, " +
+                    "or no argument at all to run the lot.");
+                break;
+        }
     }
 
     /// <summary>Section 1: who is on shift and what has been called in.</summary>
     /// <param name="centre">The command centre.</param>
     private static void ShowRoster(CommandCentre centre)
     {
-        ConsoleReport.Section("Registering responders and incidents");
+        ConsoleReport.Section(1, "Registering responders and incidents");
 
         ShowState(centre);
     }
@@ -44,7 +66,7 @@ internal sealed class Program
     /// <param name="centre">The command centre.</param>
     private static void ShowFinalState(CommandCentre centre)
     {
-        ConsoleReport.Section("The board at the end of the shift");
+        ConsoleReport.Section(7, "The board at the end of the shift");
         ShowState(centre);
     }
 
@@ -76,7 +98,7 @@ internal sealed class Program
     /// <param name="centre">The command centre.</param>
     private static void ShowSearches(CommandCentre centre)
     {
-        ConsoleReport.Section("Searching with the generic SearchTool.FindMatches<T>");
+        ConsoleReport.Section(2, "Searching with the generic SearchTool.FindMatches<T>");
 
         ConsoleReport.Line("Available responders with energy above 50:");
         foreach (Responder responder in SearchTool.FindMatches(
@@ -100,7 +122,7 @@ internal sealed class Program
     /// <param name="board">The reported incidents, in report order.</param>
     private static void AssignAndResolve(CommandCentre centre, IReadOnlyList<Incident> board)
     {
-        ConsoleReport.Section("Assigning and resolving, with both callback forms");
+        ConsoleReport.Section(3, "Assigning and resolving, with both callback forms");
 
         centre.AddResolutionCallback(LogResolution);
 
@@ -128,7 +150,7 @@ internal sealed class Program
     /// <param name="board">The reported incidents, in report order.</param>
     private static void ShowHandledFailures(CommandCentre centre, IReadOnlyList<Incident> board)
     {
-        ConsoleReport.Section("Handling the two custom exceptions");
+        ConsoleReport.Section(4, "Handling the two custom exceptions");
 
         // Send both climbers out, so the next climbing job has nobody left.
         centre.AssignIncident(board[2]);
@@ -172,7 +194,7 @@ internal sealed class Program
     /// <returns>A task that completes when both runs are finished.</returns>
     private static async Task ShowConcurrency(CommandCentre centre)
     {
-        ConsoleReport.Section("Concurrent callouts, without and with synchronisation");
+        ConsoleReport.Section(6, "Concurrent callouts, without and with synchronisation");
 
         await ThreadingDemonstration.RunUnsafeAsync(centre).ConfigureAwait(false);
         await ThreadingDemonstration.RunSafeAsync(centre).ConfigureAwait(false);
@@ -182,7 +204,7 @@ internal sealed class Program
     /// <param name="centre">The command centre.</param>
     private static void ShowStrategySwap(CommandCentre centre)
     {
-        ConsoleReport.Section("Changing the assignment policy");
+        ConsoleReport.Section(5, "Changing the assignment policy");
 
         // Both policies have to choose from the same pool, or the comparison
         // shows nothing but who happened to be busy.

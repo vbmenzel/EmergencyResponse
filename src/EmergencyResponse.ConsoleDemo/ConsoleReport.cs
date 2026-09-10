@@ -9,9 +9,6 @@ namespace EmergencyResponse.ConsoleDemo;
 /// </summary>
 internal static class ConsoleReport
 {
-    /// <summary>How many sections have been started. Sections number themselves.</summary>
-    private static int sectionCount;
-
     /// <summary>
     /// Colour is for a human at a terminal. Piping to a file or a grader's log
     /// should produce clean text, and NO_COLOR is the usual way to ask for that.
@@ -21,14 +18,14 @@ internal static class ConsoleReport
         Environment.GetEnvironmentVariable("NO_COLOR") is null;
 
     /// <summary>
-    /// Starts the next section. The number is tracked here rather than typed
-    /// at each call site, so inserting or reordering a section cannot leave the
-    /// output numbered 1, 2, 2, 4.
+    /// Starts a section. The number is passed in rather than counted here, so a
+    /// section run on its own still prints the number it has in the full run.
     /// </summary>
+    /// <param name="number">The section's place in the full run.</param>
     /// <param name="title">The heading, without a number.</param>
-    internal static void Section(string title)
+    internal static void Section(int number, string title)
     {
-        string heading = $"{++sectionCount}. {title}";
+        string heading = $"{number}. {title}";
 
         Console.WriteLine();
         Write(heading, ConsoleColor.Cyan);

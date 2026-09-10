@@ -1,0 +1,20 @@
+
+1. Registering responders and incidents
+───────────────────────────────────────
+Responders on the roster (5):
+  Bo Nielsen     AnimalCatcher   energy  60   free
+  Cyd Rahman     DronePilot      energy  85   free
+  Dev Okonkwo    WildlifeCalmer  energy  95   free
+  Eli Sorensen   AnimalCatcher   energy  40   free
+  Fay Lindqvist  DronePilot      energy  15   free
+Incidents on the board (5): 5 still open, 0 closed.
+  [Critical] Reported  Three alpacas on the motorway
+     E45 northbound, needs ICanDriveRescueVehicle
+  [Medium  ] Reported  Territorial swan occupying a bus stop
+     Market Street stop C, needs ICanCalmAnimals
+  [High    ] Reported  Goat stranded on the library roof
+     Central Library, needs ICanClimb
+  [Low     ] Reported  Seagull has stolen a hot-dog stand
+     Harbour promenade, needs anyone available
+  [Low     ] Reported  Cat in a tree that insists it is not an emergency
+     Elm Road 14, needs ICanClimb

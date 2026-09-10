@@ -1,0 +1,9 @@
+
+5. Changing the assignment policy
+─────────────────────────────────
+Everyone is free again (5 responders).
+Policy "First available" picks:
+  Bo Nielsen     AnimalCatcher   energy  60   out
+Policy "Highest energy available" picks:
+  Dev Okonkwo    WildlifeCalmer  energy  95   out
+     CommandCentre was not edited between those two picks. Only the IAssignmentStrategy it was given changed.

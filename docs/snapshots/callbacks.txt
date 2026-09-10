@@ -1,0 +1,9 @@
+
+3. Assigning and resolving, with both callback forms
+────────────────────────────────────────────────────
+Registered a named method and a lambda as resolution callbacks.
+Assigned by the First available policy:
+  Bo Nielsen     AnimalCatcher   energy  60   out
+  Bo Nielsen takes the rescue vehicle to E45 northbound. Once there, the heavy net goes over it and it is lifted clear.
+  Resolved: Three alpacas on the motorway. Alpacas walked back to the paddock.
+  Bo Nielsen is free again.
