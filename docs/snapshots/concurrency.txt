@@ -1,0 +1,11 @@
+
+6. Concurrent callouts, without and with synchronisation
+────────────────────────────────────────────────────────
+7 callouts arrive together. Each task decides who is free, waits, then records. No lock spans both steps.
+  7 of 7 callouts were recorded.
+  ! Bo Nielsen was sent to 7 incidents at once.
+     Every task read the roster before any task wrote to it, so they all saw the same person as free.
+The same 7 callouts through AssignIncident, which holds one lock across choosing and recording.
+  5 of 7 callouts were recorded.
+  No responder appears twice. The lock held.
+     The other 2 were refused with NoSuitableResponderException, which is correct once everybody is out.

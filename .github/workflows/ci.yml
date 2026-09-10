@@ -1,0 +1,55 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: build and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # RaylibUi is left out on purpose. It opens a window, so it proves
+      # nothing on a headless runner, and Core is what the tests cover.
+      - name: Restore
+        run: |
+          dotnet restore src/EmergencyResponse.Core
+          dotnet restore src/EmergencyResponse.ConsoleDemo
+          dotnet restore tests/EmergencyResponse.Tests
+
+      # TreatWarningsAsErrors is on, so a warning fails this step.
+      - name: Build
+        run: |
+          dotnet build src/EmergencyResponse.Core --configuration Release --no-restore
+          dotnet build src/EmergencyResponse.ConsoleDemo --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test tests/EmergencyResponse.Tests --configuration Release
+
+      - name: Run the demonstration
+        run: dotnet run --project src/EmergencyResponse.ConsoleDemo --configuration Release --no-build
+
+      # The GIFs in the README are recordings of these four sections. Their text
+      # is deterministic, so if it changes here the recordings no longer match
+      # the program and docs/tapes needs re-running.
+      - name: Check the README recordings are current
+        run: |
+          for section in roster callbacks policy concurrency; do
+            dotnet run --project src/EmergencyResponse.ConsoleDemo \
+              --configuration Release --no-build -- "$section" > "$RUNNER_TEMP/$section.txt"
+
+            diff -u "docs/snapshots/$section.txt" "$RUNNER_TEMP/$section.txt" && continue
+
+            echo "::error::The $section recording is stale. Re-run 'vhs docs/tapes/$section.tape' and update docs/snapshots/$section.txt."
+            exit 1
+          done
