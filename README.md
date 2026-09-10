@@ -260,33 +260,3 @@ stray `_underscored` field breaks the build rather than accumulating quietly.
 The [build workflow](.github/workflows/ci.yml) runs the same build on every push
 and pull request, then runs the tests and the demonstration itself, so a warning
 fails CI and not just somebody's machine.
-
-## Regenerating the artwork
-
-The recording at the top of this page is checked in, and so is the script that
-produces it. Neither is drawn by hand.
-
-```bash
-dotnet build
-for tape in docs/tapes/*.tape; do vhs "$tape"; done
-for s in roster callbacks policy concurrency; do
-    dotnet run --project src/EmergencyResponse.ConsoleDemo -- "$s" > "docs/snapshots/$s.txt"
-done
-```
-
-[`docs/tapes/`](docs/tapes) holds one [VHS](https://github.com/charmbracelet/vhs)
-script per recording, and each one runs a single section of the demonstration by
-name. Nothing is piped or trimmed, which is why the colour survives: the program
-drops its colour when it sees a redirected stdout.
-
-[`docs/snapshots/`](docs/snapshots) holds the same four sections as plain text,
-and the build workflow fails if the program stops producing them. GIFs cannot be
-compared: recording the same tape twice gives the same picture but different
-bytes, because the frame timings jitter. The text does not, so it is the text
-that is checked, and a failure there means a recording needs making again.
-
-`docs/images/social-preview.png` is the card GitHub shows when a link to this
-repository is posted somewhere. Behind the title is a full run of the
-demonstration, in Maple Mono, the same face the raylib board draws with. It
-belongs in **Settings, General, Social preview**, which is the only place GitHub
-reads it from.
