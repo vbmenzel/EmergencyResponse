@@ -74,8 +74,7 @@ thread appends to it.
 ### Skills are interfaces, not subclasses
 
 `ICanClimb`, `ICanOperateDrone`, `ICanCalmAnimals`, `ICanDriveRescueVehicle`.
-None of them mentions a responder type. An incident declares what it needs,
-`Responder.CanHandle` checks it, and nobody carries a method that makes no sense for them. `DronePilot` implements two, which is the point.
+An incident declares what it needs, `Responder.CanHandle` checks it, and nobody carries a method that makes no sense for them.
 
 ### Swapping the assignment policy
 
