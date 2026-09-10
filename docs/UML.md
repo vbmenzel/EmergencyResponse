@@ -1,6 +1,6 @@
 # UML class diagram
 
-[Read the project README](README.md)
+[Read the project README](../README.md)
 
 ```mermaid
 classDiagram

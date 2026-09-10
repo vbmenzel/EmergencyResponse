@@ -26,7 +26,7 @@ the end of the shift.
 
 ## The design
 
-[**Read the class diagram**](UML.md). GitHub renders it inline.
+[**Read the class diagram**](docs/UML.md). GitHub renders it inline.
 
 Two projects. `EmergencyResponse.Core` holds the domain and knows nothing about
 consoles. `EmergencyResponse.ConsoleDemo` is the only thing that prints.
