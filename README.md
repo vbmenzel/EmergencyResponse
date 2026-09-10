@@ -89,6 +89,12 @@ Policy "Highest energy available":     Dev Okonkwo     energy  95
 
 `CommandCentre.cs` is not touched between those two lines.
 
+**Why that makes the selection logic easier to change later.** The centre depends
+on the interface and never on an algorithm, so changing how a responder is chosen and changing how the centre works are two different jobs in two different files. 
+A new policy is a new class: nothing that already works gets edited, and we wont have to grow a `switch` inside the centre for every new rule that get's added. 
+The parts that must nt break are the locking, the assignment record and the guards, and a policy change never touches them, so the no-double-booking guarantee does not have to be proved
+again every time the selection rule changes. The field is typed `IAssignmentStrategy` so the compiler will not let the centre depend on a concrete strategy by accident.
+
 ## Callbacks
 
 ![Both callback forms](docs/images/demo-callbacks.png)
