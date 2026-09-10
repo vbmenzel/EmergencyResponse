@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\EmergencyResponse.Core\EmergencyResponse.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Raylib-cs" Version="8.1.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Maple Mono NF, SIL Open Font License 1.1. The licence ships beside it,
+         which the OFL requires. -->
+    <None Include="assets\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
