@@ -47,7 +47,7 @@ internal sealed class Program
             default:
                 ConsoleReport.Problem($"No section called \"{args[0]}\".");
                 ConsoleReport.Detail(
-                    "Try roster, search, callbacks, exceptions, policy, concurrency or board, " +
+                    "Try 'roster', 'search', 'callbacks', 'exceptions', 'policy', 'concurrency' or 'board', " +
                     "or no argument at all to run the lot.");
                 break;
         }
